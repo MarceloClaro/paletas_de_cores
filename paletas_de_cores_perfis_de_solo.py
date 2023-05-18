@@ -1,62 +1,51 @@
-import streamlit as st
 import cv2
 import numpy as np
-from PIL import Image
 import matplotlib.pyplot as plt
+import streamlit as st
+from sklearn.cluster import KMeans
+from PIL import Image, ImageFont, ImageDraw
 
-# Função para extrair paleta
-def extrair_paleta(imagem, n_cores):
-    pixels = imagem.reshape(-1, 3)  # Converta para matriz 2D
+@st.cache
+def load_image(image_file):
+    img = Image.open(image_file)
+    return img
 
-    # Verifique se n_cores é maior que 0
-    assert n_cores > 0, "n_cores deve ser maior que 0"
+def apply_canny(image):
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    edges = cv2.Canny(gray, 30, 100)
+    return edges
 
-    # Converta para float
-    pixels = np.float32(pixels)
+def plot_colors(colors):
+    cluster_ids = range(len(colors))
+    plt.bar(cluster_ids, len(colors)*[1], color=colors/255.0, tick_label=cluster_ids)
+    plt.xlabel('Cluster ID')
+    plt.ylabel('Count')
+    plt.title('Colors of Clusters')
+    st.pyplot(plt.gcf())  # st.pyplot() requires a matplotlib.pyplot figure, not AxesSubplot. plt.gcf() gets the current figure.
 
-    # Critérios de parada para o algoritmo kmeans
-    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.2)
+def main():
+    st.title("App de Pintura por Números com K-means")
+    uploaded_file = st.file_uploader("Escolha uma imagem...", type=['jpg','png','jpeg'])
+    
+    if uploaded_file is not None:
+        img = load_image(uploaded_file)
+        st.image(img, caption='Imagem original.', use_column_width=True)
+        
+        img = np.array(img)
+        img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        edges = apply_canny(img_gray)
+        
+        st.image(edges, caption='Bordas detectadas.', use_column_width=True)
+        
+        # Aplicar K-means
+        k = st.slider("Número de cores", 1, 10, 3)
+        img = img.reshape((-1, 3))
+        kmeans = KMeans(n_clusters=k)
+        labels = kmeans.fit_predict(img)
+        colors = kmeans.cluster_centers_
+        
+        # Plotar as cores
+        plot_colors(colors)
 
-    # Aplicar kmeans
-    _, labels, centers = cv2.kmeans(pixels, n_cores, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
-
-    # Converta de volta para valores de 8 bits
-    centers = np.uint8(centers)
-
-    # Mapear os rótulos para os centros
-    segmented_image = centers[labels.flatten()]
-
-    # Reshape de volta para a imagem original
-    segmented_image = segmented_image.reshape(imagem.shape)
-
-    return centers, segmented_image
-
-# Código principal Streamlit
-st.title('Analisador de Paleta de Cores')
-
-imagem_up = st.file_uploader('Por favor, faça upload de uma imagem')
-
-if imagem_up is not None:
-    imagem = Image.open(imagem_up)
-    imagem_cv = np.array(imagem)[:, :, ::-1]  # Converta RGB para BGR
-
-    n_cores = st.slider('Número de cores para extração', min_value=1, max_value=10, value=5)
-
-    centers, segmented_image = extrair_paleta(imagem_cv, n_cores)
-
-    fig, ax = plt.subplots(1, 2, figsize=(12, 6))
-
-    # Imagem original
-    ax[0].imshow(cv2.cvtColor(imagem_cv, cv2.COLOR_BGR2RGB))
-    ax[0].set_title('Imagem Original')
-    ax[0].axis('off')
-
-    # Imagem segmentada
-    ax[1].imshow(cv2.cvtColor(segmented_image, cv2.COLOR_BGR2RGB))
-    ax[1].set_title('Imagem Segmentada')
-    ax[1].axis('off')
-
-    st.pyplot(fig)
-
-    st.markdown('## Paleta de cores')
-    st.image(centers[:, ::-1], caption='Cores extraídas', width=50)
+if __name__ == "__main__":
+    main()
