@@ -1,46 +1,63 @@
 import streamlit as st
-import matplotlib.pyplot as plt
-import seaborn as sns
-from PIL import Image
 import cv2
 import numpy as np
+from PIL import Image
+import matplotlib.pyplot as plt
 
-
+# Função para extrair paleta
 def extrair_paleta(imagem, n_cores):
-    # Redimensionar a imagem para acelerar a extração de cores
-    imagem_reduzida = cv2.resize(imagem, (50, 50), interpolation=cv2.INTER_AREA)
+    imagem = cv2.resize(imagem, (50, 50), interpolation=cv2.INTER_AREA)
+    imagem = imagem.reshape((-1, 3))  # Converta para matriz 2D
 
-    # Redefinir a imagem para um array 2D de pixels
-    pixels = imagem_reduzida.reshape(-1, 3)
+    # Verifique se n_cores é maior que 0
+    assert n_cores > 0, "n_cores deve ser maior que 0"
 
-    # Executar k-means para encontrar as cores mais dominantes
-    kmeans = cv2.kmeans(pixels.astype(float), n_cores, None,
-                        (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.2),
-                        1, cv2.KMEANS_RANDOM_CENTERS)
+    # Converta para float
+    pixels = np.float32(imagem)
 
-    # Retornar as cores encontradas
-    return kmeans[2].astype(int)
+    # Critérios de parada para o algoritmo kmeans
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.2)
 
+    # Aplicar kmeans
+    _, labels, centers = cv2.kmeans(pixels, n_cores, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
 
-st.title('Análise da Paleta de Cores do Solo')
+    # Converta de volta para valores de 8 bits
+    centers = np.uint8(centers)
 
-imagem_upload = st.file_uploader('Faça upload da imagem do solo', type=['png', 'jpg'])
+    # Mapear os rótulos para os centros
+    segmented_image = centers[labels.flatten()]
 
-if imagem_upload is not None:
-    imagem = Image.open(imagem_upload)
-    st.image(imagem, caption='Imagem do solo carregada.', use_column_width=True)
+    # Reshape de volta para a imagem original
+    segmented_image = segmented_image.reshape(imagem.shape)
 
-    # Converter a imagem para o espaço de cores RGB (OpenCV usa BGR por padrão)
-    imagem_cv = cv2.cvtColor(np.array(imagem), cv2.COLOR_RGB2BGR)
+    return centers, segmented_image
 
-    # Extrair a paleta de cores
-    n_cores = st.sidebar.slider('Número de cores para extrair', min_value=2, max_value=16, value=5)
-    paleta_cores = extrair_paleta(imagem_cv, n_cores)
+# Código principal Streamlit
+st.title('Analisador de Paleta de Cores')
 
-    # Mostrar a paleta de cores
-    st.sidebar.header('Paleta de cores')
-    for i, cor in enumerate(paleta_cores):
-        st.sidebar.markdown(f'### Cor {i+1}')
-        st.sidebar.markdown(f'RGB: {tuple(cor)}')
-        st.sidebar.markdown(f'#### &#9608;', unsafe_allow_html=True,
-                            color=f'rgb({cor[0]},{cor[1]},{cor[2]})')
+imagem_up = st.file_uploader('Por favor, faça upload de uma imagem')
+
+if imagem_up is not None:
+    imagem = Image.open(imagem_up)
+    imagem_cv = np.array(imagem)[:, :, ::-1]  # Converta RGB para BGR
+
+    n_cores = st.slider('Número de cores para extração', min_value=1, max_value=10, value=5)
+
+    centers, segmented_image = extrair_paleta(imagem_cv, n_cores)
+
+    fig, ax = plt.subplots(1, 2, figsize=(12, 6))
+
+    # Imagem original
+    ax[0].imshow(cv2.cvtColor(imagem_cv, cv2.COLOR_BGR2RGB))
+    ax[0].set_title('Imagem Original')
+    ax[0].axis('off')
+
+    # Imagem segmentada
+    ax[1].imshow(cv2.cvtColor(segmented_image, cv2.COLOR_BGR2RGB))
+    ax[1].set_title('Imagem Segmentada')
+    ax[1].axis('off')
+
+    st.pyplot(fig)
+
+    st.markdown('## Paleta de cores')
+    st.image(centers[:, ::-1], caption='Cores extraídas', width=50)
