@@ -1,51 +1,55 @@
+import streamlit as st
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
-import streamlit as st
 from sklearn.cluster import KMeans
-from PIL import Image, ImageFont, ImageDraw
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
-@st.cache
+@st.cache(allow_output_mutation=True)
 def load_image(image_file):
-    img = Image.open(image_file)
+    file_bytes = np.asarray(bytearray(image_file.read()), dtype=np.uint8)
+    img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
     return img
 
 def apply_canny(image):
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    if len(image.shape) > 2:  # if image has more than one channel
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    else:
+        gray = image  # image is already grayscale
     edges = cv2.Canny(gray, 30, 100)
     return edges
 
-def plot_colors(colors):
-    cluster_ids = range(len(colors))
-    plt.bar(cluster_ids, len(colors)*[1], color=colors/255.0, tick_label=cluster_ids)
-    plt.xlabel('Cluster ID')
-    plt.ylabel('Count')
-    plt.title('Colors of Clusters')
-    st.pyplot(plt.gcf())  # st.pyplot() requires a matplotlib.pyplot figure, not AxesSubplot. plt.gcf() gets the current figure.
+def apply_kmeans(image, n_clusters):
+    h, w, _ = image.shape
+    image = image.reshape(h*w, 3)
+    kmeans = KMeans(n_clusters=n_clusters)
+    labels = kmeans.fit_predict(image)
+    cluster_centers = kmeans.cluster_centers_
+    return cluster_centers, labels, w, h
+
+def plot_rgb(cluster_centers):
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    rgb = [[c/256 for c in center] for center in cluster_centers]
+    rgb = np.array(rgb)
+    ax.scatter(rgb[:,0], rgb[:,1], rgb[:,2], color=rgb)
+    return fig
 
 def main():
-    st.title("App de Pintura por Números com K-means")
-    uploaded_file = st.file_uploader("Escolha uma imagem...", type=['jpg','png','jpeg'])
-    
-    if uploaded_file is not None:
-        img = load_image(uploaded_file)
-        st.image(img, caption='Imagem original.', use_column_width=True)
-        
-        img = np.array(img)
+    image_file = st.file_uploader("Upload Image", type=['jpeg', 'png', 'jpg', 'webp'])
+    n_clusters = st.sidebar.slider('Número de Cores', 1, 30, 10)
+
+    if image_file is not None:
+        img = load_image(image_file)
+        st.image(img, channels='BGR')
         img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         edges = apply_canny(img_gray)
-        
-        st.image(edges, caption='Bordas detectadas.', use_column_width=True)
-        
-        # Aplicar K-means
-        k = st.slider("Número de cores", 1, 10, 3)
-        img = img.reshape((-1, 3))
-        kmeans = KMeans(n_clusters=k)
-        labels = kmeans.fit_predict(img)
-        colors = kmeans.cluster_centers_
-        
-        # Plotar as cores
-        plot_colors(colors)
+        st.image(edges)
+        cluster_centers, labels, w, h = apply_kmeans(img, n_clusters)
+        img_kmean = cluster_centers[labels].reshape(h, w, 3)
+        st.image(img_kmean/255.0, channels='BGR')
+        fig = plot_rgb(cluster_centers)
+        st.pyplot(fig)
 
 if __name__ == "__main__":
     main()
