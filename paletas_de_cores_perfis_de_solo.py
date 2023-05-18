@@ -5,7 +5,7 @@ from PIL import Image
 import matplotlib.pyplot as plt
 
 def extrair_paleta(imagem, n_cores):
-    pixels = imagem.reshape(-1, 3)
+    pixels = imagem.reshape(-1, imagem.shape[-1])
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.2)
     _, labels, centers = cv2.kmeans(pixels.astype(float), n_cores, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
 
