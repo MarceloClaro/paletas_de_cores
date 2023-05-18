@@ -1,41 +1,94 @@
-import streamlit as st
 import numpy as np
-import cv2
-from PIL import Image
 import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
+from sklearn.utils import shuffle
+import cv2
+import ntpath
+import streamlit as st
 
-def extrair_paleta(imagem, n_cores):
-    pixels = imagem.reshape(-1, imagem.shape[-1])
-    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.2)
-    _, labels, centers = cv2.kmeans(pixels.astype(float), n_cores, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
+class Canvas():
+    """
+    Definição do objeto canvas
+    """
+    def __init__(self, path_pic, nb_color, plot=False, save=True, pixel_size=4000):
+        
+        self.namefile = ntpath.basename(path_pic).split(".")[0]
+        self.src = cv2.cvtColor(cv2.imread(path_pic), cv2.COLOR_BGR2RGB)
+        self.nb_color = nb_color
+        self.plot = plot
+        self.save = save
+        self.tar_width = pixel_size
+        self.colormap = []
 
-    segmented_image = centers[labels.flatten()]
-    segmented_image = segmented_image.reshape(imagem.shape)
-    return centers, segmented_image
+    def generate(self):
+        """
+        Função principal para gerar a imagem com cores reduzidas e suas bordas.
+        """
+        im_source = self.resize()
+        clean_img = self.cleaning(im_source)
+        quantified_image, colors = self.quantification(clean_img)
+        edges = self.apply_canny(quantified_image)
+        inverted_edges = self.invert_colors(edges)
+        st.image(inverted_edges, caption='Imagem com cores invertidas.', use_column_width=True)
 
-st.title('Analisador de Paleta de Cores de Imagens de Solo')
-n_cores = st.sidebar.slider('Número de cores na paleta', min_value=1, max_value=20, value=5, step=1)
-imagem_up = st.sidebar.file_uploader('Carregar Imagem de Solo', type=['png', 'jpg', 'jpeg'])
+        if self.save:
+            cv2.imwrite(f"./outputs/{self.namefile}-result.png",
+                        cv2.cvtColor(quantified_image.astype('float32')*255, cv2.COLOR_BGR2RGB))
+            cv2.imwrite(f"./outputs/{self.namefile}-edges.png", inverted_edges)
 
-if imagem_up is not None:
-    imagem = Image.open(imagem_up)
-    imagem_cv = np.array(imagem)
+        return inverted_edges
 
-    # Verificar se a imagem está em escala de cinza
-    if len(imagem_cv.shape) != 3 or imagem_cv.shape[2] != 3:
-        st.error("Por favor, carregue uma imagem colorida. A imagem carregada parece estar em escala de cinza.")
-    else:
-        st.image(imagem_cv, caption='Imagem Original', use_column_width=True)
+    def resize(self):
+        """
+        Redimensiona a imagem para corresponder à largura alvo e respeitar a proporção da imagem.
+        """
+        (height, width) = self.src.shape[:2]
+        if height > width: # modo retrato
+            dim = (int(width * self.tar_width / float(height)), self.tar_width)
+        else:
+            dim = (self.tar_width, int(height * self.tar_width / float(width)))
+        return cv2.resize(self.src, dim, interpolation=cv2.INTER_AREA)
 
-        centers, segmented_image = extrair_paleta(imagem_cv, n_cores)
+    def cleaning(self, picture):
+        """
+        Redução de ruído, operações morfológicas, abertura e fechamento.
+        """
+        clean_pic = cv2.fastNlMeansDenoisingColored(picture,None,10,10,7,21)
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (8, 8))
+        clean_pic = cv2.morphologyEx(clean_pic, cv2.MORPH_OPEN, kernel, cv2.BORDER_REPLICATE)
+        clean_pic = cv2.morphologyEx(clean_pic, cv2.MORPH_CLOSE, kernel, cv2.BORDER_REPLICATE)
+        return clean_pic
 
-        # Convertendo a imagem segmentada de volta para uma imagem de 8 bits
-        segmented_image = cv2.convertScaleAbs(segmented_image)
+    def quantification(self, picture):
+        """
+        Retorna a imagem K-mean.
+        """
+        width, height, dimension = tuple(picture.shape)
+        image_array = np.reshape(picture, (width * height, dimension))
+        image_array_sample = shuffle(image_array, random_state=0)[:1000]
+        kmeans = KMeans(n_clusters=self.nb_color, random_state=42).fit(image_array_sample)
+        labels = kmeans.predict(image_array)
+        new_img = self.recreate_image(kmeans.cluster_centers_, labels, width,height)
+        return new_img, kmeans.cluster_centers_
+    def recreate_image(self, codebook, labels, width, height):
+    """
+    Cria a imagem a partir de uma lista de cores, rótulos e tamanho da imagem.
+    """
+    vfunc = lambda x: codebook[labels[x]]
+    out = vfunc(np.arange(width*height))
+    return np.resize(out, (width, height, codebook.shape[1]))
 
-        st.image(segmented_image, caption='Imagem Segmentada', use_column_width=True)
+def apply_canny(self, image):
+    """
+    Aplica o filtro de Canny à imagem para detectar bordas.
+    """
+    grayscale = cv2.cvtColor(image.astype('float32'), cv2.COLOR_BGR2GRAY)
+    edged = cv2.Canny(grayscale, 30, 100)
+    return edged
 
-        st.subheader('Paleta de Cores:')
-        plt.figure(figsize=(5, 2))
-        plt.imshow([centers.astype(int)], aspect='auto')
-        plt.axis('off')
-        st.pyplot(plt)
+def invert_colors(self, image):
+    """
+    Inverte as cores da imagem.
+    """
+    return cv2.bitwise_not(image)
+
