@@ -7,6 +7,8 @@ from PIL import Image
 st.title("Análise de Paleta de Cores em Imagens de Solo")
 
 def extrair_paleta(imagem, n_cores):
+    if imagem.shape[2] == 4:  # Remove o canal alfa se existir
+        imagem = cv2.cvtColor(imagem, cv2.COLOR_BGRA2BGR)
     pixels = imagem.reshape(-1, 3)  # Converte para uma matriz 2D
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.2)
     _, labels, centers = cv2.kmeans(pixels.astype(float), n_cores, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
