@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 
 # Função para extrair paleta
 def extrair_paleta(imagem, n_cores):
-    imagem = cv2.resize(imagem, (50, 50), interpolation=cv2.INTER_AREA)
     pixels = imagem.reshape(-1, 3)  # Converta para matriz 2D
 
     # Verifique se n_cores é maior que 0
