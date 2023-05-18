@@ -1,55 +1,32 @@
 import streamlit as st
-import cv2
 import numpy as np
-from sklearn.cluster import KMeans
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+import cv2
+from matplotlib import pyplot as plt
+from PIL import Image
 
-@st.cache(allow_output_mutation=True)
-def load_image(image_file):
-    file_bytes = np.asarray(bytearray(image_file.read()), dtype=np.uint8)
-    img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
-    return img
+st.title("Análise de Paleta de Cores em Imagens de Solo")
 
-def apply_canny(image):
-    if len(image.shape) > 2:  # if image has more than one channel
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    else:
-        gray = image  # image is already grayscale
-    edges = cv2.Canny(gray, 30, 100)
-    return edges
+def extrair_paleta(imagem, n_cores):
+    pixels = imagem.reshape(-1, 3)  # Converte para uma matriz 2D
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.2)
+    _, labels, centers = cv2.kmeans(pixels.astype(float), n_cores, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
+    segmented_image = centers[labels.flatten()].reshape(imagem.shape)  # Recupera a imagem original
+    return centers, segmented_image
 
-def apply_kmeans(image, n_clusters):
-    h, w, _ = image.shape
-    image = image.reshape(h*w, 3)
-    kmeans = KMeans(n_clusters=n_clusters)
-    labels = kmeans.fit_predict(image)
-    cluster_centers = kmeans.cluster_centers_
-    return cluster_centers, labels, w, h
+n_cores = st.sidebar.slider('Número de cores na paleta:', min_value=2, max_value=20, value=5, step=1)
 
-def plot_rgb(cluster_centers):
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    rgb = [[c/256 for c in center] for center in cluster_centers]
-    rgb = np.array(rgb)
-    ax.scatter(rgb[:,0], rgb[:,1], rgb[:,2], color=rgb)
-    return fig
+imagem_up = st.file_uploader("Carregar imagem do solo:", type=['jpg', 'png', 'jpeg'])
 
-def main():
-    image_file = st.file_uploader("Upload Image", type=['jpeg', 'png', 'jpg', 'webp'])
-    n_clusters = st.sidebar.slider('Número de Cores', 1, 30, 10)
+if imagem_up is not None:
+    imagem = Image.open(imagem_up)
+    imagem_cv = np.array(imagem)
+    st.image(imagem_cv, caption='Imagem Original', use_column_width=True)
 
-    if image_file is not None:
-        img = load_image(image_file)
-        st.image(img, channels='BGR')
-        img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        edges = apply_canny(img_gray)
-        st.image(edges)
-        cluster_centers, labels, w, h = apply_kmeans(img, n_clusters)
-        img_kmean = cluster_centers[labels].reshape(h, w, 3)
-        st.image(img_kmean/255.0, channels='BGR')
-        fig = plot_rgb(cluster_centers)
-        st.pyplot(fig)
+    centers, segmented_image = extrair_paleta(imagem_cv, n_cores)
+    st.image(segmented_image, caption='Imagem Segmentada', use_column_width=True)
 
-if __name__ == "__main__":
-    main()
+    st.subheader('Paleta de Cores:')
+    plt.figure(figsize=(5, 2))
+    plt.imshow([centers.astype(int)], aspect='auto')
+    plt.axis('off')
+    st.pyplot(plt)
