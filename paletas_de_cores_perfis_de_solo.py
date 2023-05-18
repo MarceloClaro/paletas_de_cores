@@ -7,13 +7,13 @@ import matplotlib.pyplot as plt
 # Função para extrair paleta
 def extrair_paleta(imagem, n_cores):
     imagem = cv2.resize(imagem, (50, 50), interpolation=cv2.INTER_AREA)
-    imagem = imagem.reshape((-1, 3))  # Converta para matriz 2D
+    pixels = imagem.reshape(-1, 3)  # Converta para matriz 2D
 
     # Verifique se n_cores é maior que 0
     assert n_cores > 0, "n_cores deve ser maior que 0"
 
     # Converta para float
-    pixels = np.float32(imagem)
+    pixels = np.float32(pixels)
 
     # Critérios de parada para o algoritmo kmeans
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.2)
