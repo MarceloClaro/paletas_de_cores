@@ -1,0 +1,1 @@
+# paletas_de_cores_perfis_de_solo.
