@@ -10,8 +10,8 @@ class Canvas():
     Definição do objeto canvas
     """
 
-    def __init__(self, path_pic, nb_color):
-        self.src = cv2.cvtColor(cv2.imread(path_pic), cv2.COLOR_BGR2RGB)
+    def __init__(self, image, nb_color):
+        self.src = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         self.nb_color = nb_color
 
     def generate(self):
@@ -35,22 +35,17 @@ class Canvas():
         out = vfunc(np.arange(width*height))
         return np.resize(out, (width, height, codebook.shape[1]))
 
-    def apply_canny(self, image):
-        """Aplica o filtro de Canny à imagem para detectar bordas."""
-        grayscale = cv2.cvtColor(image.astype('float32'), cv2.COLOR_BGR2GRAY)
-        edged = cv2.Canny(grayscale, 30, 100)
-        return edged
-
-    def invert_colors(self, image):
-        """Inverte as cores da imagem."""
-        return cv2.bitwise_not(image)
-
 if __name__ == "__main__":
     st.title("Transforme a sua imagem em um canvas")
 
-    path_pic = st.text_input('Insira o caminho para a sua imagem')
+    uploaded_file = st.file_uploader("Faça upload da sua imagem", type=['png', 'jpg', 'jpeg'])
     nb_color = st.slider('Escolha o número de cores', min_value=1, max_value=255, value=5, step=1)
-    
-    if st.button('Gerar'):
-        canvas = Canvas(path_pic, nb_color)
-        result = canvas.generate()
+
+    if uploaded_file is not None:
+        file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
+        image = cv2.imdecode(file_bytes, 1)
+
+        if st.button('Gerar'):
+            canvas = Canvas(image, nb_color)
+            result = canvas.generate()
+            # Aqui você pode fazer o que quiser com a imagem resultante
