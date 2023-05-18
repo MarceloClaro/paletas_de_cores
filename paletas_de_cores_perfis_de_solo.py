@@ -9,9 +9,9 @@ st.title("Análise de Paleta de Cores em Imagens de Solo")
 def extrair_paleta(imagem, n_cores):
     if imagem.shape[2] == 4:  # Remove o canal alfa se existir
         imagem = cv2.cvtColor(imagem, cv2.COLOR_BGRA2BGR)
-    pixels = imagem.reshape(-1, 3)  # Converte para uma matriz 2D
+    pixels = imagem.reshape(-1, 3).astype(np.float32)  # Converte para uma matriz 2D e assegura o tipo correto (float32)
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.2)
-    _, labels, centers = cv2.kmeans(pixels.astype(float), n_cores, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
+    _, labels, centers = cv2.kmeans(pixels, n_cores, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
     segmented_image = centers[labels.flatten()].reshape(imagem.shape)  # Recupera a imagem original
     return centers, segmented_image
 
@@ -22,13 +22,17 @@ imagem_up = st.file_uploader("Carregar imagem do solo:", type=['jpg', 'png', 'jp
 if imagem_up is not None:
     imagem = Image.open(imagem_up)
     imagem_cv = np.array(imagem)
-    st.image(imagem_cv, caption='Imagem Original', use_column_width=True)
 
-    centers, segmented_image = extrair_paleta(imagem_cv, n_cores)
-    st.image(segmented_image, caption='Imagem Segmentada', use_column_width=True)
+    if imagem_cv.size == 0:  # Teste para imagem vazia
+        st.error("A imagem carregada está vazia. Por favor, carregue uma imagem válida.")
+    else:
+        st.image(imagem_cv, caption='Imagem Original', use_column_width=True)
 
-    st.subheader('Paleta de Cores:')
-    plt.figure(figsize=(5, 2))
-    plt.imshow([centers.astype(int)], aspect='auto')
-    plt.axis('off')
-    st.pyplot(plt)
+        centers, segmented_image = extrair_paleta(imagem_cv, n_cores)
+        st.image(segmented_image, caption='Imagem Segmentada', use_column_width=True)
+
+        st.subheader('Paleta de Cores:')
+        plt.figure(figsize=(5, 2))
+        plt.imshow([centers.astype(int)], aspect='auto')
+        plt.axis('off')
+        st.pyplot(plt)
