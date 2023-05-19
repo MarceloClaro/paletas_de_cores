@@ -47,8 +47,8 @@ class Canvas():
 
         for ind, color in enumerate(colors):
             self.colormap.append([int(c*255) for c in color])
-            lower_color = np.array([int(c*255) for c in color])
-            upper_color = np.array([int(c*255) for c in color])
+            lower_color = np.array([int(c*255) for c in color], dtype="uint8")
+            upper_color = np.array([int(c*255) for c in color], dtype="uint8")
             mask = cv2.inRange(quantified_image, lower_color, upper_color)
             cnts = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
             cnts = cnts[0] if len(cnts) == 2 else cnts[1]
@@ -85,7 +85,7 @@ class Canvas():
         w, h, d = img.shape
         image_array = np.reshape(img, (w * h, d))
         image_array_sample = shuffle(image_array, random_state=0)[:1000]
-        kmeans = KMeans(n_clusters=self.nb_color, random_state=0).fit(image_array_sample)
+        kmeans = KMeans(n_clusters=self.nb_color, random_state=0, n_init=10).fit(image_array_sample)
 
         # replace the color of the original image by the centroid color of the closest cluster
         labels = kmeans.predict(image_array)
