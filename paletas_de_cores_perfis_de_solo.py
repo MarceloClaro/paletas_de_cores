@@ -1,5 +1,3 @@
-
-```python
 # -*- coding: utf-8 -*-
 """Script para gerar uma paleta de cores a partir de uma imagem"""
 
