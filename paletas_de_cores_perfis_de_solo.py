@@ -7,6 +7,8 @@ from sklearn.utils import shuffle
 import cv2
 import streamlit as st
 from PIL import Image
+import io
+import base64
 
 class Canvas():
     def __init__(self, src, nb_color, pixel_size=4000):
