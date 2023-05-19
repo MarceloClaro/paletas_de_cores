@@ -48,17 +48,17 @@ class Canvas():
 
     def cleaning(self, picture):
         clean_pic = cv2.fastNlMeansDenoisingColored(picture, None, 10, 10, 7, 21)
-        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (8, 8))
-        clean_pic = cv2.morphologyEx(clean_pic, cv2.MORPH_OPEN, kernel)
-        clean_pic = cv2.morphologyEx(clean_pic, cv2.MORPH_CLOSE, kernel)
-        return clean_pic
+        kernel = np.ones((5, 5), np.uint8)
+        img_erosion = cv2.erode(clean_pic, kernel, iterations=1)
+        img_dilation = cv2.dilate(img_erosion, kernel, iterations=1)
+        return img_dilation
 
     def quantification(self, picture):
-        width, height, dimension = tuple(picture.shape)
-        image_array = np.reshape(picture, (width * height, dimension))
-        image_array_sample = shuffle(image_array, random_state=0)[:1000]
-        kmeans = KMeans(n_clusters=self.nb_color, random_state=42).fit(image_array_sample)
-        labels = kmeans.predict(image_array)
+        width, height, depth = picture.shape
+        flattened = np.reshape(picture, (width * height, depth))
+        sample = shuffle(flattened)[:1000]
+        kmeans = KMeans(n_clusters=self.nb_color).fit(sample)
+        labels = kmeans.predict(flattened)
         new_img = self.recreate_image(kmeans.cluster_centers_, labels, width, height)
         return new_img, kmeans.cluster_centers_
 
@@ -84,7 +84,10 @@ if uploaded_file is not None:
         canvas = Canvas(image, nb_color, pixel_size)
         result, colors, segmented_image = canvas.generate()
 
-        # Converter imagem segmentada para RGB
+        # Converter imagem segmentada para np.uint8
+        segmented_image = (segmented_image * 255).astype(np.uint8)
+        
+        # Agora converta de BGR para RGB
         segmented_image = cv2.cvtColor(segmented_image, cv2.COLOR_BGR2RGB)
 
         st.image(result, caption='Imagem Resultante', use_column_width=True)
