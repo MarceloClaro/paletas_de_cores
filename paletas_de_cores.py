@@ -74,7 +74,15 @@ st.image("clube.png")  # Adiciona a imagem no topo do app
 st.title('Gerador de Paleta de Cores ')
 st.subheader("Sketching and concept development")
 uploaded_file = st.file_uploader("Escolha uma imagem", type=["jpg", "png"])
-
+st.write("""
+Esse APP é um programa criado pelo clube de artes plástica para gerar uma paleta de cores a partir de uma imagem. Ele pode ser útil para um artista plástico na sua pintura de várias maneiras.
+Primeiramente, o aplicativo permite que o artista faça o upload de uma imagem de referência, que pode ser uma foto, uma ilustração ou qualquer imagem que ele deseje usar como base. Isso é útil para um artista visualizar uma cena ou um conceito que deseja pintar.
+Em seguida, o aplicativo utiliza o algoritmo K-means para quantificar as cores presentes na imagem. O número de clusters (cores) é determinado pelo artista através de um controle deslizante. Isso permite que o artista controle a quantidade de cores que deseja extrair da imagem.
+Uma vez gerada a paleta de cores, o aplicativo exibe a imagem resultante, onde cada região da imagem original é substituída pela cor correspondente da paleta. Isso pode ajudar o artista a visualizar como sua pintura ficaria usando essas cores específicas.
+Além disso, o aplicativo também exibe a imagem segmentada, onde cada região da imagem original é preenchida com uma cor sólida correspondente à cor dominante da região. Isso pode ajudar o artista a identificar áreas de destaque ou contrastes na imagem, facilitando o processo de esboço e desenvolvimento de conceitos.
+O aplicativo também fornece a opção de baixar a imagem resultante e a imagem segmentada, permitindo que o artista as salve e as utilize como referência durante o processo de pintura.
+Em resumo, esse aplicativo pode ajudar um artista plástico fornecendo uma paleta de cores baseada em uma imagem de referência e auxiliando no esboço e desenvolvimento de conceitos através da imagem segmentada. Ele permite que o artista experimente diferentes combinações de cores e visualize como sua pintura pode ficar antes mesmo de começar a trabalhar na tela.
+""")
 if uploaded_file is not None:
     file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
     image = cv2.imdecode(file_bytes, 1)
