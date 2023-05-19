@@ -91,7 +91,7 @@ if uploaded_file is not None:
             st.write(f'Resolução da imagem: {dpi} DPI')
 
             # Calcula a dimensão física de um pixel
-            cm_per_inch = 2.54
+            cm_per_inch = pixel_size
             cm_per_pixel = cm_per_inch / dpi[0]  # Supõe-se que a resolução seja a mesma em ambas as direções
             st.write(f'Tamanho do pixel: {cm_per_pixel:.4f} centímetros')
 
