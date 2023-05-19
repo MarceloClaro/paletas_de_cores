@@ -76,6 +76,12 @@ if uploaded_file is not None:
     image = cv2.imdecode(file_bytes, 1)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # Corrige a ordem dos canais de cor
     st.image(image, caption='Imagem Carregada', use_column_width=True)
+    
+    # Tentativa de leitura dos metadados de resolução (DPI)
+    pil_image = Image.open(io.BytesIO(file_bytes))
+    if 'dpi' in pil_image.info:
+        dpi = pil_image.info['dpi']
+        st.write(f'Resolução da imagem: {dpi} DPI')    
 
     nb_color = st.slider('Escolha o número de cores', min_value=2, max_value=80, value=5, step=1)
 
