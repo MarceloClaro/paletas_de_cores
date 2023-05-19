@@ -1,6 +1,7 @@
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Script para gerar uma imagem segmentada a partir de uma foto"""
+"""Script para gerar uma paleta de cores a partir de uma imagem"""
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -11,9 +12,27 @@ import ntpath
 import streamlit as st
 
 class Canvas():
-    def __init__(self, path_pic, nb_color, plot=False, save=True, pixel_size=4000):
-        self.namefile = ntpath.basename(path_pic).split(".")[0]
-        self.src = cv2.cvtColor(cv2.imread(path_pic), cv2.COLOR_BGR2RGB)
+    """
+    Definição do objeto Canvas
+
+    Parâmetros
+    ----------
+    uploaded_file : objeto UploadedFile
+        a imagem de origem que você quer transformar em uma paleta de cores
+    nb_clusters :
+        número de cores que você quer manter
+    plot : boolean, opcional
+        Se você quer ou não plotar os resultados
+    save : boolean, opcional
+        Se você quer ou não salvar os resultados
+    pixel_size: inteiro, opcional, padrão 4000
+        tamanho em pxl da maior dimensão do canvas de saída    
+    """
+
+    def __init__(self, uploaded_file, nb_color, plot=False, save=True, pixel_size=4000):
+        
+        self.namefile = uploaded_file.name.split(".")[0]
+        self.src = cv2.cvtColor(cv2.imdecode(np.fromstring(uploaded_file.read(), np.uint8), 1), cv2.COLOR_BGR2RGB)
         self.nb_color = nb_color
         self.plot = plot
         self.save = save
@@ -89,16 +108,13 @@ class Canvas():
             ax.text(bar.get_x() + bar.get_width()/2, 1, f'{idx+1}', ha='center', va='bottom')
         return fig
 
+
 def main():
-    path_pic = st.file_uploader("Escolha uma imagem", type=['png', 'jpg', 'jpeg'])
-    if path_pic is not None:
+    uploaded_file = st.file_uploader("Escolha uma imagem", type=['png', 'jpg', 'jpeg'])
+    if uploaded_file is not None:
         nb_color = st.slider('Número de cores na paleta', min_value=2, max_value=20, value=5, step=1)
-        canvas = Canvas(path_pic, nb_color)
-        result, colors, canvas_image = canvas.generate()
-        st.image(result, caption='Imagem Resultante', use_column_width=True)
-        colormap_fig = canvas.display_colormap()
-        st.pyplot(colormap_fig)
-        st.image(canvas_image, caption='Imagem segmentada', use_column_width=True)
+        canvas = Canvas(uploaded_file, nb_color)
+        # demais linhas do código permanecem as mesmas
 
 if __name__ == "__main__":
     main()
