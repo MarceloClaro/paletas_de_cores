@@ -127,4 +127,4 @@ if uploaded_file is not None:
         is_success_segmented, im_buf_arr_segmented = cv2.imencode(".jpg", segmented_image)
         byte_im_segmented = im_buf_arr_segmented.tobytes()
         b64_segmented = base64.b64encode(byte_im_segmented).decode()
-        link_segmented = f'<a href="data:file/jpg;base64,{b64_segmented}" download="segmented.jpg">Baixar imagem segmentada em jpg</
+        link_segmented = f'<a href="data:file/jpg;base64,{b64_segmented}" download="segmented.jpg">Baixar imagem segmentada em jpg</a>
