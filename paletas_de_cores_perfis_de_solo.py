@@ -47,7 +47,9 @@ class Canvas():
 
         for ind, color in enumerate(colors):
             self.colormap.append([int(c*255) for c in color])
-            mask = cv2.inRange(quantified_image, color, color)
+            lower_color = np.array([int(c*255) for c in color])
+            upper_color = np.array([int(c*255) for c in color])
+            mask = cv2.inRange(quantified_image, lower_color, upper_color)
             cnts = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
             cnts = cnts[0] if len(cnts) == 2 else cnts[1]
 
