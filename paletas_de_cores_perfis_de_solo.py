@@ -112,9 +112,13 @@ class Canvas():
 def main():
     uploaded_file = st.file_uploader("Escolha uma imagem", type=['png', 'jpg', 'jpeg'])
     if uploaded_file is not None:
-        nb_color = st.slider('Número de cores na paleta', min_value=2, max_value=20, value=5, step=1)
+        nb_color = st.slider('Número de cores na paleta', min_value=2, max_value= value=5, step=1)
         canvas = Canvas(uploaded_file, nb_color)
-        # demais linhas do código permanecem as mesmas
+        result, colors, canvas_image = canvas.generate()
+        st.image(result, caption='Imagem Resultante', use_column_width=True)
+        colormap_fig = canvas.display_colormap()
+        st.pyplot(colormap_fig)
+        st.image(canvas_image, caption='Imagem segmentada', use_column_width=True)
 
 if __name__ == "__main__":
     main()
