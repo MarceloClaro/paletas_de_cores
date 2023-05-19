@@ -1,4 +1,3 @@
-Claro, abaixo está a modificação do código para exibir a imagem segmentada e fornecer uma opção de download para ela:
 
 ```python
 # -*- coding: utf-8 -*-
