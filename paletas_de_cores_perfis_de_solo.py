@@ -6,6 +6,7 @@ from sklearn.cluster import KMeans
 from sklearn.utils import shuffle
 import cv2
 import streamlit as st
+from PIL import Image
 
 class Canvas():
     def __init__(self, src, nb_color, pixel_size=4000):
@@ -67,7 +68,6 @@ class Canvas():
         out = vfunc(np.arange(width * height))
         return np.resize(out, (width, height, codebook.shape[1]))
 
-
 st.title('Gerador de Paleta de Cores')
 uploaded_file = st.file_uploader("Escolha uma imagem", type=["jpg", "png"])
 
@@ -92,6 +92,11 @@ if uploaded_file is not None:
 
         st.image(result, caption='Imagem Resultante', use_column_width=True)
         st.image(segmented_image, caption='Imagem Segmentada', use_column_width=True)
+
+        # Mostrar paleta de cores
+        for i, color in enumerate(colors):
+            color_block = np.ones((50, 50, 3), np.uint8) * color[::-1]  # Cores em formato BGR
+            st.image(color_block, caption=f'Cor {i+1}', width=50)
 
         result_bytes = cv2.imencode('.jpg', result)[1].tobytes()
         st.download_button(
