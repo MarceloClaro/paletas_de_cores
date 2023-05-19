@@ -43,7 +43,7 @@ class Canvas():
         width, height, depth = clean_img.shape
         clean_img = np.array(clean_img, dtype="uint8")/255
         quantified_image, colors = self.quantification(clean_img)
-        canvas = np.ones(quantified_image.shape[:3], dtype="uint8")*255
+        canvas = np.ones(quantified_image.shape[:2], dtype="uint8")*255
 
         for ind, color in enumerate(colors):
             self.colormap.append([int(c*255) for c in color])
@@ -89,7 +89,13 @@ class Canvas():
 
         # replace the color of the original image by the centroid color of the closest cluster
         labels = kmeans.predict(image_array)
-        return np.reshape(labels, (w, h)), kmeans.cluster_centers_
+        quantified_image = np.reshape(labels, (w, h))
+        quantified_image = quantified_image.astype(np.uint8)  # Convert to uint8
+
+        colors = kmeans.cluster_centers_
+        colors = (colors * 255).astype(np.uint8)  # Convert to uint8
+
+        return quantified_image, colors
 
 def main():
     st.title('Paletas de Cores - Perfis de Solo')
