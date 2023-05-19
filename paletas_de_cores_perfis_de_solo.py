@@ -23,8 +23,10 @@ class Canvas():
     pixel_size: integer, optional, default 4000
         tamanho em px da maior dimensão do canvas de saída
     """
+
     def __init__(self, src, nb_color, pixel_size=4000):
-        self.src = cv2.cvtColor(src, cv2.COLOR_BGR2RGB) # Converte de BGR para RGB
+        
+        self.src = cv2.cvtColor(src, cv2.COLOR_BGR2RGB)  # Converte de BGR para RGB
         self.nb_color = nb_color
         self.tar_width = pixel_size
         self.colormap = []
@@ -89,6 +91,9 @@ class Canvas():
         out = vfunc(np.arange(width*height))
         return np.resize(out, (width, height, codebook.shape[1]))
 
+# Parte Streamlit
+st.title('Gerador de Paleta de Cores')
+uploaded_file = st.file_uploader("Escolha uma imagem", type=["jpg", "png"])
 
 if uploaded_file is not None:
     file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
@@ -96,8 +101,8 @@ if uploaded_file is not None:
 
     # Converte a imagem de BGR para RGB após a leitura
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    
     st.image(image, caption='Imagem Carregada', use_column_width=True)
-
 
     nb_color = st.slider('Escolha o número de cores', min_value=2, max_value=80, value=5, step=1)
 
