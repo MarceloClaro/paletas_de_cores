@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """Script para gerar uma paleta de cores a partir de uma imagem"""
@@ -8,7 +7,6 @@ import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 from sklearn.utils import shuffle
 import cv2
-import ntpath
 import streamlit as st
 
 class Canvas():
@@ -108,7 +106,6 @@ class Canvas():
             ax.text(bar.get_x() + bar.get_width()/2, 1, f'{idx+1}', ha='center', va='bottom')
         return fig
 
-
 def main():
     uploaded_file = st.file_uploader("Escolha uma imagem", type=['png', 'jpg', 'jpeg'])
     if uploaded_file is not None:
@@ -119,6 +116,11 @@ def main():
         colormap_fig = canvas.display_colormap()
         st.pyplot(colormap_fig)
         st.image(canvas_image, caption='Imagem segmentada', use_column_width=True)
+
+        # Opção para fazer download das imagens
+        st.write("Fazer download das imagens:")
+        st.write("[Download Imagem Resultante](%s-result.png)" % canvas.namefile)
+        st.write("[Download Imagem Segmentada](%s-canvas.png)" % canvas.namefile)
 
 if __name__ == "__main__":
     main()
