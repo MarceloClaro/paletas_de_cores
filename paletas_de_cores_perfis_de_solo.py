@@ -100,7 +100,7 @@ if uploaded_file is not None:
     image = cv2.imdecode(file_bytes, 1)
     st.image(image, caption='Imagem Carregada', use_column_width=True)
 
-    nb_color = st.slider('Escolha o número de cores', min_value=2, max_value=10, value=5, step=1)
+    nb_color = st.slider('Escolha o número de cores', min_value=2, max_value=80, value=5, step=1)
 
     if st.button('Gerar'):
         pixel_size = st.slider('Escolha o tamanho do pixel', min_value=500, max_value=5000, value=4000, step=100)
