@@ -6,7 +6,6 @@ from sklearn.cluster import KMeans
 from sklearn.utils import shuffle
 import cv2
 import streamlit as st
-import base64
 
 class Canvas():
     def __init__(self, src, nb_color, pixel_size=4000):
@@ -70,14 +69,13 @@ class Canvas():
 
 
 st.title('Gerador de Paleta de Cores')
-
 uploaded_file = st.file_uploader("Escolha uma imagem", type=["jpg", "png"])
 
 if uploaded_file is not None:
     file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
     image = cv2.imdecode(file_bytes, 1)
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    st.image(image, caption='Imagem carregada', use_column_width=True)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # Corrige a ordem dos canais de cor
+    st.image(image, caption='Imagem Carregada', use_column_width=True)
 
     nb_color = st.slider('Escolha o número de cores', min_value=2, max_value=80, value=5, step=1)
 
@@ -86,8 +84,11 @@ if uploaded_file is not None:
         canvas = Canvas(image, nb_color, pixel_size)
         result, colors, segmented_image = canvas.generate()
 
-        st.image(result, caption='Imagem resultante', use_column_width=True)
-        st.image(segmented_image, caption='Imagem segmentada', use_column_width=True)
+        # Converter imagem segmentada para RGB
+        segmented_image = cv2.cvtColor(segmented_image, cv2.COLOR_BGR2RGB)
+
+        st.image(result, caption='Imagem Resultante', use_column_width=True)
+        st.image(segmented_image, caption='Imagem Segmentada', use_column_width=True)
 
         result_bytes = cv2.imencode('.jpg', result)[1].tobytes()
         st.download_button(
