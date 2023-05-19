@@ -112,7 +112,7 @@ class Canvas():
 def main():
     uploaded_file = st.file_uploader("Escolha uma imagem", type=['png', 'jpg', 'jpeg'])
     if uploaded_file is not None:
-        nb_color = st.slider('Número de cores na paleta', min_value=2, max_value=80 value=5, step=1)
+        nb_color = st.slider('Número de cores na paleta', min_value=2, max_value=80, value=5, step=1)
         canvas = Canvas(uploaded_file, nb_color)
         result, colors, canvas_image = canvas.generate()
         st.image(result, caption='Imagem Resultante', use_column_width=True)
