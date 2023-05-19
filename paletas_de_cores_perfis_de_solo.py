@@ -11,7 +11,7 @@ import io
 import base64
 
 class Canvas():
-    def __init__(self, src, nb_color, pixel_size=40000):
+    def __init__(self, src, nb_color, pixel_size=10000):
         self.src = cv2.cvtColor(src, cv2.COLOR_BGR2RGB)  # Corrige a ordem dos canais de cor
         self.nb_color = nb_color
         self.tar_width = pixel_size
@@ -82,7 +82,7 @@ if uploaded_file is not None:
     nb_color = st.slider('Escolha o número de cores', min_value=2, max_value=80, value=5, step=1)
 
     if st.button('Gerar'):
-        pixel_size = st.slider('Escolha o tamanho do pixel', min_value=500, max_value=40000, value=40000, step=100)
+        pixel_size = st.slider('Escolha o tamanho do pixel', min_value=500, max_value=40000, value=10000, step=100)
 
         # Tentativa de leitura dos metadados de resolução (DPI)
         pil_image = Image.open(io.BytesIO(file_bytes))
