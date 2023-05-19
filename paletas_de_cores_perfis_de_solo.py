@@ -103,7 +103,7 @@ if uploaded_file is not None:
     nb_color = st.slider('Escolha o número de cores', min_value=2, max_value=80, value=5, step=1)
 
     if st.button('Gerar'):
-        pixel_size = st.slider('Escolha o tamanho do pixel', min_value=500, max_value=5000, value=4000, step=100)
+        pixel_size = st.slider('Escolha o tamanho do pixel', min_value=500, max_value=4000, value=4000, step=100)
         canvas = Canvas(image, nb_color, pixel_size)
         result, colors = canvas.generate()
 
