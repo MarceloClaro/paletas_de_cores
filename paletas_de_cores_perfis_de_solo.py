@@ -78,25 +78,25 @@ if uploaded_file is not None:
     image = cv2.imdecode(file_bytes, 1)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # Corrige a ordem dos canais de cor
     st.image(image, caption='Imagem Carregada', use_column_width=True)
-       
 
     nb_color = st.slider('Escolha o número de cores', min_value=2, max_value=80, value=5, step=1)
 
     if st.button('Gerar'):
-        pixel_size = st.slider('Escolha o tamanho do pixel', min_value=500, max_value=8000, value=4000, step=100)
+        pixel_size = st.slider('Escolha o tamanho do pixel', min_value=500, max_value=4000, value=4000, step=100)
+
+        # Tentativa de leitura dos metadados de resolução (DPI)
+        pil_image = Image.open(io.BytesIO(file_bytes))
+        if 'dpi' in pil_image.info:
+            dpi = pil_image.info['dpi']
+            st.write(f'Resolução da imagem: {dpi} DPI')
+
+            # Calcula a dimensão física de um pixel
+            cm_per_inch = 2.54
+            cm_per_pixel = cm_per_inch / dpi[0]  # Supõe-se que a resolução seja a mesma em ambas as direções
+            st.write(f'Tamanho do pixel: {cm_per_pixel:.4f} centímetros')
+
         canvas = Canvas(image, nb_color, pixel_size)
         result, colors, segmented_image = canvas.generate()
-    
-    # Tentativa de leitura dos metadados de resolução (DPI)
-    pil_image = Image.open(io.BytesIO(file_bytes))
-    if 'dpi' in pil_image.info:
-        dpi = pil_image.info['dpi']
-        st.write(f'Resolução da imagem: {dpi} DPI')
-        # Calcula a dimensão física de um pixel
-        cm_per_inch = pixel_size
-        cm_per_pixel = cm_per_inch / dpi[0]  # Supõe-se que a resolução seja a mesma em ambas as direções
-        st.write(f'Tamanho do pixel: {cm_per_pixel:.4f} centímetros')        
-        
 
         # Converter imagem segmentada para np.uint8
         segmented_image = (segmented_image * 255).astype(np.uint8)
