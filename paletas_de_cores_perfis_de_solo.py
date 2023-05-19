@@ -30,7 +30,7 @@ class Canvas():
     def __init__(self, uploaded_file, nb_color, plot=False, save=True, pixel_size=4000):
         
         self.namefile = uploaded_file.name.split(".")[0]
-        self.src = cv2.cvtColor(cv2.imdecode(np.fromstring(uploaded_file.read(), np.uint8), 1), cv2.COLOR_BGR2RGB)
+        self.src = cv2.cvtColor(cv2.imdecode(np.frombuffer(uploaded_file.read(), np.uint8), 1), cv2.COLOR_BGR2RGB)
         self.nb_color = nb_color
         self.plot = plot
         self.save = save
@@ -61,10 +61,10 @@ class Canvas():
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, 0, 1)
 
         if self.save:
-            cv2.imwrite(f"{self.namefile}-result.png",
-                        cv2.cvtColor(quantified_image.astype('float32')*255, cv2.COLOR_BGR2RGB))
+            result_img = cv2.cvtColor((quantified_image*255).astype(np.uint8), cv2.COLOR_BGR2RGB)
+            cv2.imwrite(f"{self.namefile}-result.png", result_img)
             cv2.imwrite(f"{self.namefile}-canvas.png", canvas)
-        return cv2.cvtColor(quantified_image.astype('float32')*255, cv2.COLOR_BGR2RGB), colors, canvas
+        return result_img, colors, canvas
 
     def resize(self):
         (height, width) = self.src.shape[:2]
@@ -72,55 +72,33 @@ class Canvas():
             dim = (int(width * self.tar_width / float(height)), self.tar_width)
         else:
             dim = (self.tar_width, int(height * self.tar_width / float(width)))
-        return cv2.resize(self.src, dim, interpolation=cv2.INTER_AREA)
+        return cv2.resize(self.src, dim, interpolation=cv2.INTER_LINEAR)
 
-    def cleaning(self, picture):
-        clean_pic = cv2.fastNlMeansDenoisingColored(picture,None,10,10,7,21)
-        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (8, 8))
-        clean_pic = cv2.morphologyEx(clean_pic, cv2.MORPH_OPEN, kernel, cv2.BORDER_REPLICATE)
-        clean_pic = cv2.morphologyEx( clean_pic, cv2.MORPH_CLOSE, kernel, cv2.BORDER_REPLICATE)
-        return clean_pic
+    def cleaning(self, img):
+        return cv2.bilateralFilter(img, 5, 50, 50)
 
-    def quantification(self, picture):
-        width, height, dimension = tuple(picture.shape)
-        image_array = np.reshape(picture, (width * height, dimension))
+    def quantification(self, img):
+        # create a random subsample of your image to get the main colors
+        # because the KMeans algorithm is costly in term of computation
+        w, h, d = img.shape
+        image_array = np.reshape(img, (w * h, d))
         image_array_sample = shuffle(image_array, random_state=0)[:1000]
-        kmeans = KMeans(n_clusters=self.nb_color, random_state=42).fit(image_array_sample)
+        kmeans = KMeans(n_clusters=self.nb_color, random_state=0).fit(image_array_sample)
+
+        # replace the color of the original image by the centroid color of the closest cluster
         labels = kmeans.predict(image_array)
-        new_img = self.recreate_image(kmeans.cluster_centers_, labels, width, height)
-        return new_img, kmeans.cluster_centers_
-
-    def recreate_image(self, codebook, labels, width, height):
-        vfunc = lambda x: codebook[labels[x]]
-        out = vfunc(np.arange(width*height))
-        return np.resize(out, (width, height, codebook.shape[1]))
-
-    def display_colormap(self):
-        fig, ax = plt.subplots(1, 1, figsize=(5, 2), constrained_layout=True)
-        for sp in ax.spines.values():
-            sp.set_visible(False)
-        ax.set_xticks([])
-        ax.set_yticks([])
-        bars = ax.bar(range(len(self.colormap)), [2]*len(self.colormap), color=np.array(self.colormap)/255)
-        for idx, bar in enumerate(bars):
-            ax.text(bar.get_x() + bar.get_width()/2, 1, f'{idx+1}', ha='center', va='bottom')
-        return fig
+        return np.reshape(labels, (w, h)), kmeans.cluster_centers_
 
 def main():
+    st.title('Paletas de Cores - Perfis de Solo')
+    st.write("Selecione uma imagem para gerar a paleta de cores.")
     uploaded_file = st.file_uploader("Escolha uma imagem", type=['png', 'jpg', 'jpeg'])
     if uploaded_file is not None:
         nb_color = st.slider('Número de cores na paleta', min_value=2, max_value=80, value=5, step=1)
         canvas = Canvas(uploaded_file, nb_color)
         result, colors, canvas_image = canvas.generate()
         st.image(result, caption='Imagem Resultante', use_column_width=True)
-        colormap_fig = canvas.display_colormap()
-        st.pyplot(colormap_fig)
-        st.image(canvas_image, caption='Imagem segmentada', use_column_width=True)
-
-        # Opção para fazer download das imagens
-        st.write("Fazer download das imagens:")
-        st.write("[Download Imagem Resultante](%s-result.png)" % canvas.namefile)
-        st.write("[Download Imagem Segmentada](%s-canvas.png)" % canvas.namefile)
+        st.image(canvas_image, caption='Canvas Resultante', use_column_width=True)
 
 if __name__ == "__main__":
     main()
