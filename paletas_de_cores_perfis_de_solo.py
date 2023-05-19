@@ -79,24 +79,22 @@ class Canvas():
     def cleaning(self, img):
         return cv2.bilateralFilter(img, 5, 50, 50)
 
-    def quantification(self, img):
-        # create a random subsample of your image to get the main colors
-        # because the KMeans algorithm is costly in term of computation
-        w, h, d = img.shape
-        image_array = np.reshape(img, (w * h, d))
-        image_array_sample = shuffle(image_array, random_state=0)[:1000]
-        kmeans = KMeans(n_clusters=self.nb_color, random_state=0, n_init=10).fit(image_array_sample)
+def quantification(self, img):
+    w, h, d = img.shape
+    image_array = np.reshape(img, (w * h, d))
+    image_array_sample = shuffle(image_array, random_state=0)[:1000]
+    kmeans = KMeans(n_clusters=self.nb_color, random_state=0, n_init=10).fit(image_array_sample)
 
-        # replace the color of the original image by the centroid color of the closest cluster
-        labels = kmeans.predict(image_array)
-        quantified_image = np.reshape(labels, (w, h))
-        quantified_image = quantified_image.astype(np.uint8)  # Convert to uint8
+    labels = kmeans.predict(image_array)
+    quantified_image = np.reshape(labels, (w, h))
+    quantified_image = quantified_image.astype(np.uint8)  # Convert to uint8
 
-        colors = kmeans.cluster_centers_
-        colors = (colors * 255).astype(np.uint8)  # Convert to uint8
+    colors = kmeans.cluster_centers_
+    colors = (colors * 255).astype(np.uint8)  # Convert to uint8
 
-        return quantified_image, colors
+    return quantified_image, colors
 
+    
 def main():
     st.title('Paletas de Cores - Perfis de Solo')
     st.write("Selecione uma imagem para gerar a paleta de cores.")
