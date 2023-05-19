@@ -6,7 +6,6 @@ from sklearn.cluster import KMeans
 from sklearn.utils import shuffle
 import cv2
 import streamlit as st
-import base64
 
 class Canvas():
     def __init__(self, src, nb_color, pixel_size=4000):
@@ -37,7 +36,7 @@ class Canvas():
                     cv2.putText(canvas, '{:d}'.format(ind + 1), (txt_x, txt_y + 15),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1)
 
-        return canvas, colors, quantified_image
+        return canvas, colors, cv2.cvtColor(quantified_image, cv2.COLOR_BGR2RGB)  # Converter BGR para RGB
 
     def resize(self):
         (height, width) = self.src.shape[:2]
@@ -55,19 +54,17 @@ class Canvas():
         return clean_pic
 
     def quantification(self, picture):
-        width, height, dimension = tuple(picture.shape)
-        image_array = np.reshape(picture, (width * height, dimension))
+        width, height, depth = tuple(picture.shape)
+        image_array = np.reshape(picture, (width * height, depth))
         image_array_sample = shuffle(image_array, random_state=0)[:1000]
-        kmeans = KMeans(n_clusters=self.nb_color, random_state=42).fit(image_array_sample)
+        kmeans = KMeans(n_clusters=self.nb_color, random_state=0).fit(image_array_sample)
         labels = kmeans.predict(image_array)
-        new_img = self.recreate_image(kmeans.cluster_centers_, labels, width, height)
-        return new_img, kmeans.cluster_centers_
+        return self.recreate_image(kmeans.cluster_centers_, labels, width, height), kmeans.cluster_centers_
 
     def recreate_image(self, codebook, labels, width, height):
-        vfunc = lambda x: codebook[labels[x]]
+        vfunc = np.vectorize(lambda x: codebook[labels[x]])
         out = vfunc(np.arange(width * height))
         return np.resize(out, (width, height, codebook.shape[1]))
-
 
 st.title('Gerador de Paleta de Cores')
 
