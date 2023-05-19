@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """Script para gerar uma paleta de cores a partir de uma imagem"""
 
@@ -7,37 +6,33 @@ import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 from sklearn.utils import shuffle
 import cv2
+import ntpath
 import streamlit as st
+import base64
 
 class Canvas():
     """
-    Definição do objeto Canvas
+    Definição do objeto canvas
 
     Parâmetros
     ----------
-    uploaded_file : objeto UploadedFile
-        a imagem de origem que você quer transformar em uma paleta de cores
+    src : array_like
+        a imagem de origem que você deseja transformar em uma paleta de cores
     nb_clusters :
-        número de cores que você quer manter
-    plot : boolean, opcional
-        Se você quer ou não plotar os resultados
-    save : boolean, opcional
-        Se você quer ou não salvar os resultados
-    pixel_size: inteiro, opcional, padrão 4000
-        tamanho em pxl da maior dimensão do canvas de saída    
+        número de cores que você deseja manter
+    pixel_size: integer, optional, default 4000
+        tamanho em px da maior dimensão do canvas de saída
     """
 
-    def __init__(self, uploaded_file, nb_color, plot=False, save=True, pixel_size=4000):
+    def __init__(self, src, nb_color, pixel_size=4000):
         
-        self.namefile = uploaded_file.name.split(".")[0]
-        self.src = cv2.cvtColor(cv2.imdecode(np.fromstring(uploaded_file.read(), np.uint8), 1), cv2.COLOR_BGR2RGB)
+        self.src = cv2.cvtColor(src, cv2.COLOR_BGR2RGB)
         self.nb_color = nb_color
-        self.plot = plot
-        self.save = save
         self.tar_width = pixel_size
         self.colormap = []
 
     def generate(self):
+        """Função principal"""
         im_source = self.resize()
         clean_img = self.cleaning(im_source)
         width, height, depth = clean_img.shape
@@ -55,26 +50,25 @@ class Canvas():
                 _, _, width_ctr, height_ctr = cv2.boundingRect(contour)
                 if width_ctr > 10 and height_ctr > 10 and cv2.contourArea(contour, True) < -100:
                     cv2.drawContours(canvas, [contour], -1, 0, 1)
+                    #Add label
                     txt_x, txt_y = contour[0][0]
                     cv2.putText(canvas, '{:d}'.format(ind + 1),
                                 (txt_x, txt_y + 15),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, 0, 1)
 
-        if self.save:
-            cv2.imwrite(f"{self.namefile}-result.png",
-                        cv2.cvtColor(quantified_image.astype('float32')*255, cv2.COLOR_BGR2RGB))
-            cv2.imwrite(f"{self.namefile}-canvas.png", canvas)
-        return cv2.cvtColor(quantified_image.astype('float32')*255, cv2.COLOR_BGR2RGB), colors, canvas
+        return canvas, colors
 
     def resize(self):
+        """Redimensiona a imagem para corresponder à largura alvo e respeitar a proporção da imagem"""
         (height, width) = self.src.shape[:2]
-        if height > width:
+        if height > width: # modo retrato
             dim = (int(width * self.tar_width / float(height)), self.tar_width)
         else:
             dim = (self.tar_width, int(height * self.tar_width / float(width)))
         return cv2.resize(self.src, dim, interpolation=cv2.INTER_AREA)
 
     def cleaning(self, picture):
+        """Redução de ruído, operações morfológicas, abrindo e fechando"""
         clean_pic = cv2.fastNlMeansDenoisingColored(picture,None,10,10,7,21)
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (8, 8))
         clean_pic = cv2.morphologyEx(clean_pic, cv2.MORPH_OPEN, kernel, cv2.BORDER_REPLICATE)
@@ -82,6 +76,7 @@ class Canvas():
         return clean_pic
 
     def quantification(self, picture):
+        """Retorna a imagem K-means"""
         width, height, dimension = tuple(picture.shape)
         image_array = np.reshape(picture, (width * height, dimension))
         image_array_sample = shuffle(image_array, random_state=0)[:1000]
@@ -91,36 +86,36 @@ class Canvas():
         return new_img, kmeans.cluster_centers_
 
     def recreate_image(self, codebook, labels, width, height):
+        """Cria a imagem a partir de uma lista de cores, rótulos e tamanho da imagem"""
         vfunc = lambda x: codebook[labels[x]]
         out = vfunc(np.arange(width*height))
         return np.resize(out, (width, height, codebook.shape[1]))
 
-    def display_colormap(self):
-        fig, ax = plt.subplots(1, 1, figsize=(5, 2), constrained_layout=True)
-        for sp in ax.spines.values():
-            sp.set_visible(False)
-        ax.set_xticks([])
-        ax.set_yticks([])
-        bars = ax.bar(range(len(self.colormap)), [2]*len(self.colormap), color=np.array(self.colormap)/255)
-        for idx, bar in enumerate(bars):
-            ax.text(bar.get_x() + bar.get_width()/2, 1, f'{idx+1}', ha='center', va='bottom')
-        return fig
+# Parte Streamlit
+st.title('Gerador de Paleta de Cores')
+uploaded_file = st.file_uploader("Escolha uma imagem", type=["jpg", "png"])
 
-def main():
-    uploaded_file = st.file_uploader("Escolha uma imagem", type=['png', 'jpg', 'jpeg'])
-    if uploaded_file is not None:
-        nb_color = st.slider('Número de cores na paleta', min_value=2, max_value=80, value=5, step=1)
-        canvas = Canvas(uploaded_file, nb_color)
-        result, colors, canvas_image = canvas.generate()
+if uploaded_file is not None:
+    file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
+    image = cv2.imdecode(file_bytes, 1)
+    st.image(image, caption='Imagem Carregada', use_column_width=True)
+
+    nb_color = st.slider('Escolha o número de cores', min_value=2, max_value=10, value=5, step=1)
+
+    if st.button('Gerar'):
+        pixel_size = st.slider('Escolha o tamanho do pixel', min_value=500, max_value=5000, value=4000, step=100)
+        canvas = Canvas(image, nb_color, pixel_size)
+        result, colors = canvas.generate()
+
+        # Mostrando a imagem resultante
         st.image(result, caption='Imagem Resultante', use_column_width=True)
-        colormap_fig = canvas.display_colormap()
-        st.pyplot(colormap_fig)
-        st.image(canvas_image, caption='Imagem segmentada', use_column_width=True)
 
-        # Opção para fazer download das imagens
-        st.write("Fazer download das imagens:")
-        st.write("[Download Imagem Resultante](%s-result.png)" % canvas.namefile)
-        st.write("[Download Imagem Segmentada](%s-canvas.png)" % canvas.namefile)
+        # Fornecendo a opção de download
+        # Transformando a imagem resultante para o formato de bytes
+        is_success, im_buf_arr = cv2.imencode(".jpg", result)
+        byte_im = im_buf_arr.tobytes()
 
-if __name__ == "__main__":
-    main()
+        # Preparando o download
+        b64 = base64.b64encode(byte_im).decode()  # some strings
+        linko= f'<a href="data:file/jpg;base64,{b64}" download="yourfilename.jpg">Baixar imagem em jpg</a>'
+        st.markdown(linko, unsafe_allow_html=True)
