@@ -1,3 +1,6 @@
+Claro, abaixo está a modificação do código para exibir a imagem segmentada e fornecer uma opção de download para ela:
+
+```python
 # -*- coding: utf-8 -*-
 """Script para gerar uma paleta de cores a partir de uma imagem"""
 
@@ -56,7 +59,7 @@ class Canvas():
                                 (txt_x, txt_y + 15),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, 0, 1)
 
-        return canvas, colors
+        return canvas, colors, quantified_image
 
     def resize(self):
         """Redimensiona a imagem para corresponder à largura alvo e respeitar a proporção da imagem"""
@@ -70,7 +73,9 @@ class Canvas():
     def cleaning(self, picture):
         """Redução de ruído, operações morfológicas, abrindo e fechando"""
         clean_pic = cv2.fastNlMeansDenoisingColored(picture,None,10,10,7,21)
-        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (8, 8))
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (8
+
+, 8))
         clean_pic = cv2.morphologyEx(clean_pic, cv2.MORPH_OPEN, kernel, cv2.BORDER_REPLICATE)
         clean_pic = cv2.morphologyEx( clean_pic, cv2.MORPH_CLOSE, kernel, cv2.BORDER_REPLICATE)
         return clean_pic
@@ -98,10 +103,7 @@ uploaded_file = st.file_uploader("Escolha uma imagem", type=["jpg", "png"])
 if uploaded_file is not None:
     file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
     image = cv2.imdecode(file_bytes, 1)
-
-    # Converte a imagem de BGR para RGB após a leitura
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # Converte de BGR para RGB
     st.image(image, caption='Imagem Carregada', use_column_width=True)
 
     nb_color = st.slider('Escolha o número de cores', min_value=2, max_value=80, value=5, step=1)
@@ -109,17 +111,23 @@ if uploaded_file is not None:
     if st.button('Gerar'):
         pixel_size = st.slider('Escolha o tamanho do pixel', min_value=500, max_value=4000, value=4000, step=100)
         canvas = Canvas(image, nb_color, pixel_size)
-        result, colors = canvas.generate()
+        result, colors, segmented_image = canvas.generate()
 
         # Mostrando a imagem resultante
         st.image(result, caption='Imagem Resultante', use_column_width=True)
 
-        # Fornecendo a opção de download
-        # Transformando a imagem resultante para o formato de bytes
-        is_success, im_buf_arr = cv2.imencode(".jpg", result)
-        byte_im = im_buf_arr.tobytes()
+        # Mostrando a imagem segmentada
+        st.image(segmented_image, caption='Imagem Segmentada', use_column_width=True)
 
-        # Preparando o download
-        b64 = base64.b64encode(byte_im).decode()  # some strings
-        linko= f'<a href="data:file/jpg;base64,{b64}" download="yourfilename.jpg">Baixar imagem em jpg</a>'
-        st.markdown(linko, unsafe_allow_html=True)
+        # Fornecendo a opção de download para a imagem resultante
+        is_success_result, im_buf_arr_result = cv2.imencode(".jpg", result)
+        byte_im_result = im_buf_arr_result.tobytes()
+        b64_result = base64.b64encode(byte_im_result).decode()
+        link_result = f'<a href="data:file/jpg;base64,{b64_result}" download="result.jpg">Baixar imagem resultante em jpg</a>'
+        st.markdown(link_result, unsafe_allow_html=True)
+
+        # Fornecendo a opção de download para a imagem segmentada
+        is_success_segmented, im_buf_arr_segmented = cv2.imencode(".jpg", segmented_image)
+        byte_im_segmented = im_buf_arr_segmented.tobytes()
+        b64_segmented = base64.b64encode(byte_im_segmented).decode()
+        link_segmented = f'<a href="data:file/jpg;base64,{b64_segmented}" download="segmented.jpg">Baixar imagem segmentada em jpg</
