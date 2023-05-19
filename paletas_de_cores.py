@@ -70,7 +70,9 @@ class Canvas():
         out = vfunc(np.arange(width * height))
         return np.resize(out, (width, height, codebook.shape[1]))
 
+st.image("clube.png")  # Adiciona a imagem no topo do app
 st.title('Gerador de Paleta de Cores ')
+st.subheader("Sketching and concept development")
 uploaded_file = st.file_uploader("Escolha uma imagem", type=["jpg", "png"])
 
 if uploaded_file is not None:
