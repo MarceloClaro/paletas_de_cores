@@ -5,5 +5,3 @@ matplotlib
 scikit-learn
 seaborn
 colour-science[graphviz, plotting]
-
-
