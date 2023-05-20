@@ -130,32 +130,26 @@ if uploaded_file is not None:
         st.image(result, caption='Imagem Resultante', use_column_width=True)
         st.image(segmented_image, caption='Imagem Segmentada', use_column_width=True)
 
+       
         # Mostrar paleta de cores
         for i, color in enumerate(colors):
             color_block = np.ones((50, 50, 3), np.uint8) * color[::-1]  # Cores em formato BGR
             st.image(color_block, width=50)
 
-            # Cálculo das proporções das cores primárias
+            # Cálculo das proporções das cores CMYK
             r, g, b = color
-            total = r + g + b
-            r_pct = round((r/total)*100, 2)
-            g_pct = round((g/total)*100, 2)
-            b_pct = round((b/total)*100, 2)
+            c, m, y, k = rgb_to_cmyk(r, g, b)
 
             st.write(f"""
             A cor {i+1} tem os valores RGB ({int(r)}, {int(g)}, {int(b)}).
-            Ela pode ser obtida a partir das cores primárias da seguinte forma:
+            Ela pode ser convertida para o modelo CMYK da seguinte forma:
 
-            Vermelho (R): {int(r)} - {r_pct}%
-            Verde (G): {int(g)} - {g_pct}%
-            Azul (B): {int(b)} - {b_pct}%
-
-            No sistema de cores RGB, cada componente de cor (vermelho, verde e azul) pode ter um valor entre 0 e 255.
-            Portanto, a cor ({int(r)}, {int(g)}, {int(b)}) é composta por essas quantidades de vermelho, verde e azul.
-
-            No modelo RGB, as cores são adicionadas juntas para criar novas cores, e todas as três cores primárias juntas em sua intensidade máxima resultam em branco.
-            Portanto, é uma combinação de várias intensidades de vermelho, verde e azul que cria essa cor específica.
+            Ciano (C): {c*100:.2f}%
+            Magenta (M): {m*100:.2f}%
+            Amarelo (Y): {y*100:.2f}%
+            Preto (K): {k*100:.2f}%
             """)
+
 
 
       
