@@ -1,14 +1,21 @@
 # -*- coding: utf-8 -*-
 """Script para gerar uma paleta de cores a partir de uma imagem"""
 
-import numpy as np
-from sklearn.cluster import KMeans
-from sklearn.utils import shuffle
-import cv2
-import streamlit as st
-from PIL import Image
-import io
-import base64
+# Importando todas as coisas necessárias para o nosso programa funcionar.
+# Esses são como os blocos de construção que vamos usar para fazer o nosso programa.
+
+import numpy as np  # Esta é uma ferramenta para lidar com listas de números.
+from sklearn.cluster import KMeans  # Essa é uma ferramenta que nos ajuda a encontrar grupos de coisas.
+from sklearn.utils import shuffle  # Isso nos ajuda a misturar coisas.
+import cv2  # Esta é uma ferramenta para trabalhar com imagens.
+import streamlit as st  # Isso é o que nos permite criar a interface do nosso programa.
+from PIL import Image  # Outra ferramenta para trabalhar com imagens.
+import io  # Essa é uma ferramenta que nos ajuda a lidar com arquivos e dados.
+import base64  # Essa é uma ferramenta que nos ajuda a converter dados.
+
+# Aqui estamos criando uma nova ferramenta que chamamos de "Canvas".
+# Isso nos ajuda a lidar com imagens e cores.
+
 
 class Canvas():
     def __init__(self, src, nb_color, pixel_size=4000):
@@ -69,10 +76,16 @@ class Canvas():
         vfunc = lambda x: codebook[labels[x]]
         out = vfunc(np.arange(width * height))
         return np.resize(out, (width, height, codebook.shape[1]))
+    
+# Aqui é onde começamos a construir a interface do nosso programa.
+# Estamos adicionando coisas como texto e botões para as pessoas interagirem.
 
 st.image("clube.png")  # Adiciona a imagem no topo do app
 st.title('Gerador de Paleta de Cores para Pintura por Números ')
 st.subheader("Sketching and concept development")
+
+# Isso é para as pessoas fazerem o upload de uma imagem que elas querem usar.
+
 uploaded_file = st.file_uploader("Escolha uma imagem", type=["jpg", "png"])
 st.write("""
 Esse APP é um programa criado pelo clube de artes plástica para gerar uma paleta de cores numeradas a partir de uma imagem. Ele pode ser útil para um artista plástico na sua pintura de várias maneiras.
