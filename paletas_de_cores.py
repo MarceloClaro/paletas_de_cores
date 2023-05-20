@@ -152,7 +152,6 @@ if uploaded_file is not None:
                 color_area = np.count_nonzero(segmented_image.reshape(-1, 3) == color)
                 cluster_percentage = (color_area / segmented_image.size) * 100
 
-                
                 st.subheader("Sketching and concept development da paleta de cor")
                 st.markdown(f"**PALETAS DE COR PARA: {total_ml:.2f} ml.**")
                 st.markdown("A cor pode ser alcançada pela combinação das cores primárias do modelo CMYK, utilizando a seguinte dosagem:")
