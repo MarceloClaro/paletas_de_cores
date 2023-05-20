@@ -9,7 +9,7 @@ import streamlit as st  # Isso é o que nos permite criar a interface do nosso p
 from PIL import Image  # Outra ferramenta para trabalhar com imagens.
 import io  # Essa é uma ferramenta que nos ajuda a lidar com arquivos e dados.
 import base64  # Essa é uma ferramenta que nos ajuda a converter dados.
-import colour
+
 
 # Aqui estamos criando uma nova ferramenta que chamamos de "Canvas".
 # Isso nos ajuda a lidar com imagens e cores.
