@@ -176,6 +176,7 @@ if uploaded_file is not None:
 
 
             st.write(f"""
+            PALETAS DE COR PARA: {total_ml:.2f} ml
             A cor {i+1} tem os valores RGB ({int(r)}, {int(g)}, {int(b)}).
             Ela pode ser convertida para o modelo CMYK da seguinte forma:
 
