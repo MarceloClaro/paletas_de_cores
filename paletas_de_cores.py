@@ -16,6 +16,20 @@ import base64  # Essa é uma ferramenta que nos ajuda a converter dados.
 # Aqui estamos criando uma nova ferramenta que chamamos de "Canvas".
 # Isso nos ajuda a lidar com imagens e cores.
 
+def rgb_to_cmyk(r, g, b):
+    if (r == 0) and (g == 0) and (b == 0):
+        return 0, 0, 0, 1
+    c = 1 - r / 255
+    m = 1 - g / 255
+    y = 1 - b / 255
+
+    min_cmy = min(c, m, y)
+    c = (c - min_cmy) / (1 - min_cmy)
+    m = (m - min_cmy) / (1 - min_cmy)
+    y = (y - min_cmy) / (1 - min_cmy)
+    k = min_cmy
+
+    return c, m, y, k
 
 class Canvas():
     def __init__(self, src, nb_color, pixel_size=4000):
