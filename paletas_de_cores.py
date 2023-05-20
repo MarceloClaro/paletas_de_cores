@@ -102,7 +102,13 @@ class Canvas():
 st.image("clube.png")  # Adiciona a imagem no topo do app
 st.title('Gerador de Paleta de Cores para Pintura por Números ')
 st.subheader("Sketching and concept development")
+st.subheader("""
+https://orcid.org/0000-0001-8996-2887
 
+marcelo.laranjeira@prof.educrateus.com.br
+
+Whatsapp:(88)98158-7145 (https://www.geomaker.org/)
+""")
 # Isso é para as pessoas fazerem o upload de uma imagem que elas querem usar.
 
 uploaded_file = st.file_uploader("Escolha uma imagem", type=["jpg", "png"])
