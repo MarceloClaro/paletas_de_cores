@@ -22,13 +22,13 @@ def rgb_to_cmyk(r, g, b):
 
     return c, m, y, k
 
-def calculate_percentage(c, m, y, k):
+def calculate_percentage(c, m, y, k, total_ml):
     total_ink = c + m + y + k
-    c_percent = (c / total_ink) * 100
-    m_percent = (m / total_ink) * 100
-    y_percent = (y / total_ink) * 100
-    k_percent = (k / total_ink) * 100
-    return c_percent, m_percent, y_percent, k_percent
+    c_ml = (c / total_ink) * total_ml
+    m_ml = (m / total_ink) * total_ml
+    y_ml = (y / total_ink) * total_ml
+    k_ml = (k / total_ink) * total_ml
+    return c_ml, m_ml, y_ml, k_ml
 
 class Canvas():
     def __init__(self, src, nb_color, pixel_size=4000):
@@ -124,6 +124,8 @@ if uploaded_file is not None:
             cm_per_pixel = cm_per_inch / dpi[0]
             st.write(f'Tamanho do pixel: {cm_per_pixel:.4f} centímetros')
 
+        total_ml = st.number_input('Digite o valor total em mililitros (ml)', min_value=0.1, value=10.0, step=0.1)
+
         canvas = Canvas(image, nb_color, pixel_size)
         result, colors, segmented_image = canvas.generate()
 
@@ -139,29 +141,17 @@ if uploaded_file is not None:
 
             r, g, b = color
             c, m, y, k = rgb_to_cmyk(r, g, b)
-            c_percent, m_percent, y_percent, k_percent = calculate_percentage(c, m, y, k)
-
-            # Cálculo das proporções das cores CMYK
-            r, g, b = color
-            c, m, y, k = rgb_to_cmyk(r, g, b)
-            c_percent, m_percent, y_percent, k_percent = calculate_percentage(c, m, y, k)
+            c_ml, m_ml, y_ml, k_ml = calculate_percentage(c, m, y, k, total_ml)
 
             st.write(f"""
             A cor {i+1} tem os valores RGB ({int(r)}, {int(g)}, {int(b)}).
             Ela pode ser convertida para o modelo CMYK da seguinte forma:
 
-            Ciano (C): {c_percent:.2f}%
-            Magenta (M): {m_percent:.2f}%
-            Amarelo (Y): {y_percent:.2f}%
-            Preto (K): {k_percent:.2f}%
-
-            Escolha a quantidade em mililitros (ml) para cada cor:
-            Ciano (C): {st.number_input(f"Quantidade de Ciano (C) em ml", value=c_percent * 0.1, step=0.01):.2f} ml
-            Magenta (M): {st.number_input(f"Quantidade de Magenta (M) em ml", value=m_percent * 0.1, step=0.01):.2f} ml
-            Amarelo (Y): {st.number_input(f"Quantidade de Amarelo (Y) em ml", value=y_percent * 0.1, step=0.01):.2f} ml
-            Preto (K): {st.number_input(f"Quantidade de Preto (K) em ml", value=k_percent * 0.1, step=0.01):.2f} ml
+            Ciano (C): {c_ml:.2f} ml
+            Magenta (M): {m_ml:.2f} ml
+            Amarelo (Y): {y_ml:.2f} ml
+            Preto (K): {k_ml:.2f} ml
             """)
-
 
         result_bytes = cv2.imencode('.jpg', result)[1].tobytes()
         st.download_button(
