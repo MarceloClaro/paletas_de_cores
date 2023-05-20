@@ -15,7 +15,6 @@ import base64  # Essa é uma ferramenta que nos ajuda a converter dados.
 
 # Aqui estamos criando uma nova ferramenta que chamamos de "Canvas".
 # Isso nos ajuda a lidar com imagens e cores.
-
 def rgb_to_cmyk(r, g, b):
     if (r == 0) and (g == 0) and (b == 0):
         return 0, 0, 0, 1
@@ -30,6 +29,7 @@ def rgb_to_cmyk(r, g, b):
     k = min_cmy
 
     return c, m, y, k
+
 
 def calculate_percentage(c, m, y, k):
     total_ink = c + m + y + k
@@ -149,6 +149,7 @@ if uploaded_file is not None:
         st.image(result, caption='Imagem Resultante', use_column_width=True)
         st.image(segmented_image, caption='Imagem Segmentada', use_column_width=True)
 
+      
         # Mostrar paleta de cores
         for i, color in enumerate(colors):
             color_block = np.ones((50, 50, 3), np.uint8) * color[::-1]  # Cores em formato BGR
@@ -157,10 +158,12 @@ if uploaded_file is not None:
             # Cálculo das proporções das cores CMYK
             r, g, b = color
             c, m, y, k = rgb_to_cmyk(r, g, b)
+            percentage = calculate_percentage(c, m, y, k)
 
             st.write(f"""
             A cor {i+1} tem os valores RGB ({int(r)}, {int(g)}, {int(b)}).
             Ela pode ser convertida para o modelo CMYK da seguinte forma:
+
             Ciano (C): {c*100:.2f}%
             Magenta (M): {m*100:.2f}%
             Amarelo (Y): {y*100:.2f}%
