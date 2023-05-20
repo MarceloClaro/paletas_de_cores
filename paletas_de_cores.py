@@ -141,6 +141,11 @@ if uploaded_file is not None:
             c, m, y, k = rgb_to_cmyk(r, g, b)
             c_percent, m_percent, y_percent, k_percent = calculate_percentage(c, m, y, k)
 
+            # Cálculo das proporções das cores CMYK
+            r, g, b = color
+            c, m, y, k = rgb_to_cmyk(r, g, b)
+            c_percent, m_percent, y_percent, k_percent = calculate_percentage(c, m, y, k)
+
             st.write(f"""
             A cor {i+1} tem os valores RGB ({int(r)}, {int(g)}, {int(b)}).
             Ela pode ser convertida para o modelo CMYK da seguinte forma:
@@ -150,12 +155,13 @@ if uploaded_file is not None:
             Amarelo (Y): {y_percent:.2f}%
             Preto (K): {k_percent:.2f}%
 
-            Percentual de 10 ml para cada cor:
-            Ciano (C): {c_percent * 0.1:.2f} ml
-            Magenta (M): {m_percent * 0.1:.2f} ml
-            Amarelo (Y): {y_percent * 0.1:.2f} ml
-            Preto (K): {k_percent * 0.1:.2f} ml
+            Escolha a quantidade em mililitros (ml) para cada cor:
+            Ciano (C): {st.number_input(f"Quantidade de Ciano (C) em ml", value=c_percent * 0.1, step=0.01):.2f} ml
+            Magenta (M): {st.number_input(f"Quantidade de Magenta (M) em ml", value=m_percent * 0.1, step=0.01):.2f} ml
+            Amarelo (Y): {st.number_input(f"Quantidade de Amarelo (Y) em ml", value=y_percent * 0.1, step=0.01):.2f} ml
+            Preto (K): {st.number_input(f"Quantidade de Preto (K) em ml", value=k_percent * 0.1, step=0.01):.2f} ml
             """)
+
 
         result_bytes = cv2.imencode('.jpg', result)[1].tobytes()
         st.download_button(
