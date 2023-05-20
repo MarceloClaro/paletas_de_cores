@@ -31,6 +31,11 @@ def rgb_to_cmyk(r, g, b):
 
     return c, m, y, k
 
+def calculate_percentage(c, m, y, k):
+    total_ink = c + m + y + k
+    percentage = total_ink * 10  # 10 ml de cor
+    return percentage
+
 class Canvas():
     def __init__(self, src, nb_color, pixel_size=4000):
         self.src = cv2.cvtColor(src, cv2.COLOR_BGR2RGB)  # Corrige a ordem dos canais de cor
@@ -156,12 +161,12 @@ if uploaded_file is not None:
             st.write(f"""
             A cor {i+1} tem os valores RGB ({int(r)}, {int(g)}, {int(b)}).
             Ela pode ser convertida para o modelo CMYK da seguinte forma:
-
             Ciano (C): {c*100:.2f}%
             Magenta (M): {m*100:.2f}%
             Amarelo (Y): {y*100:.2f}%
             Preto (K): {k*100:.2f}%
-            """)
+
+            Porcentagem em 10 ml de cor: {percentage:.2f}%
         
 
         result_bytes = cv2.imencode('.jpg', result)[1].tobytes()
