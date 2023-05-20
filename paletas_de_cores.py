@@ -165,7 +165,6 @@ if uploaded_file is not None:
 
       
         # Mostrar paleta de cores
-         st.subheader("Sketching and concept development da paleta de cor")
         for i, color in enumerate(colors):
             color_block = np.ones((50, 50, 3), np.uint8) * color[::-1]  # Cores em formato BGR
             st.image(color_block, width=50)
