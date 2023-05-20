@@ -129,29 +129,26 @@ if uploaded_file is not None:
 
         st.image(result, caption='Imagem Resultante', use_column_width=True)
         st.image(segmented_image, caption='Imagem Segmentada', use_column_width=True)
-def rgb_to_cmyk(r, g, b):
-    r = r / 255.0
-    g = g / 255.0
-    b = b / 255.0
-    k = 1 - max(r, g, b)
-    c = (1 - r - k) / (1 - k) if k != 1 else 0
-    m = (1 - g - k) / (1 - k) if k != 1 else 0
-    y = (1 - b - k) / (1 - k) if k != 1 else 0
-    return c, m, y, k
 
         # Mostrar paleta de cores
         for i, color in enumerate(colors):
-            color_rgb = [int(c * 255) for c in color]
             color_block = np.ones((50, 50, 3), np.uint8) * color[::-1]  # Cores em formato BGR
-            st.image(color_block, caption=f'Cor {i+1}: RGB{tuple(color_rgb)}', width=50)
+            st.image(color_block, width=50)
 
-            # Convertendo para CMYK e mostrando os valores
-            r, g, b = color_rgb
+            # Cálculo das proporções das cores CMYK
+            r, g, b = color
             c, m, y, k = rgb_to_cmyk(r, g, b)
-            st.write(f'CMYK: {c:.2f}, {m:.2f}, {y:.2f}, {k:.2f}')
 
+            st.write(f"""
+            A cor {i+1} tem os valores RGB ({int(r)}, {int(g)}, {int(b)}).
+            Ela pode ser convertida para o modelo CMYK da seguinte forma:
 
-      
+            Ciano (C): {c*100:.2f}%
+            Magenta (M): {m*100:.2f}%
+            Amarelo (Y): {y*100:.2f}%
+            Preto (K): {k*100:.2f}%
+            """)
+        
 
         result_bytes = cv2.imencode('.jpg', result)[1].tobytes()
         st.download_button(
