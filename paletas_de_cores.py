@@ -132,23 +132,20 @@ if uploaded_file is not None:
 
 
         # Mostrar paleta de cores
+        # Mostrar paleta de cores
         for i, color in enumerate(colors):
+            # Convertendo para inteiros
+            r, g, b = [int(c * 255) for c in color]
+            # Calculando as porcentagens
+            r_perc = r / 255 * 100
+            g_perc = g / 255 * 100
+            b_perc = b / 255 * 100
+            # Criando um bloco de cor
             color_block = np.ones((50, 50, 3), np.uint8) * color[::-1]  # Cores em formato BGR
-            # Converte cor para RGB e apresenta na legenda
-            rgb_color = tuple(int(c * 255) for c in color)
-            st.image(color_block, caption=f'Cor {i+1} - RGB: {rgb_color}', width=50)
-            st.image(color_block, caption=f'Cor {i+1}, RGB: ({int(color[0])}, {int(color[1])}, {int(color[2])})', width=50)
-             # Mostrar paleta de cores
-            for i, color in enumerate(colors):
-                color_block = np.ones((50, 50, 3), np.uint8) * color[::-1]  # Cores em formato BGR
-                st.image(color_block, width=50)
+            # Criando a legenda com valores RGB e porcentagens
+            caption = f'Cor {i+1}: RGB({r}, {g}, {b}) - R: {r_perc:.2f}%, G: {g_perc:.2f}%, B: {b_perc:.2f}%'
+            st.image(color_block, caption=caption, width=50)
 
-                # Cálculo das proporções das cores primárias
-                r, g, b = color
-                total = r + g + b
-                r_pct = round((r/total)*100, 2)
-                g_pct = round((g/total)*100, 2)
-                b_pct = round((b/total)*100, 2)
 
                 st.write(f"""
                 A cor {i+1} tem os valores RGB ({int(r)}, {int(g)}, {int(b)}).
