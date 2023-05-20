@@ -149,7 +149,7 @@ if uploaded_file is not None:
             # Calcula a dimensão física de um pixel
             cm_per_inch = pixel_size
             cm_per_pixel = cm_per_inch / dpi[0]  # Supõe-se que a resolução seja a mesma em ambas as direções
-            st.write(f'Tamanho do pixel: {cm_per_pixel:.4f} centímetros')
+            st.write(f'Tamanho de cada pixel: {cm_per_pixel:.4f} centímetros')
 
         canvas = Canvas(image, nb_color, pixel_size)
         result, colors, segmented_image = canvas.generate()
@@ -189,9 +189,7 @@ if uploaded_file is not None:
             Magenta (Vermelho) (M): {m_ml:.2f} ml
             Amarelo (Y): {y_ml:.2f} ml
             Preto (K): {k_ml:.2f} ml
-            
-            Percentual de área na imagem segmentada: {color_percentage:.2f}%
-          
+                    
             """)
 
 
