@@ -162,7 +162,6 @@ if uploaded_file is not None:
                 st.write(f"Cluster da cor na imagem segmentada: {cluster}")
                 st.write(f"Percentual de área na imagem segmentada: {cluster_percentage:.2f}%")
 
-
         result_bytes = cv2.imencode('.jpg', result)[1].tobytes()
         st.download_button(
             label="Baixar imagem resultante",
