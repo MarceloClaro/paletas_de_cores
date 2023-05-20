@@ -137,6 +137,8 @@ if uploaded_file is not None:
             # Converte cor para RGB e apresenta na legenda
             rgb_color = tuple(int(c * 255) for c in color)
             st.image(color_block, caption=f'Cor {i+1} - RGB: {rgb_color}', width=50)
+            st.image(color_block, caption=f'Cor {i+1}, RGB: ({int(color[0])}, {int(color[1])}, {int(color[2])})', width=50)
+           
 
         result_bytes = cv2.imencode('.jpg', result)[1].tobytes()
         st.download_button(
