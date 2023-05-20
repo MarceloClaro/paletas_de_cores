@@ -174,7 +174,7 @@ if uploaded_file is not None:
             c, m, y, k = rgb_to_cmyk(r, g, b)
             c_ml, m_ml, y_ml, k_ml = calculate_ml(c, m, y, k, total_ml)
 
-
+            st.subheader("Sketching and concept development da paleta de cor")
             st.write(f"""
             PALETAS DE COR PARA: {total_ml:.2f} ml.
             
