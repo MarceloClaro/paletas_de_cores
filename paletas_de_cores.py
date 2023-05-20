@@ -15,6 +15,7 @@ import base64  # Essa é uma ferramenta que nos ajuda a converter dados.
 
 # Aqui estamos criando uma nova ferramenta que chamamos de "Canvas".
 # Isso nos ajuda a lidar com imagens e cores.
+
 def rgb_to_cmyk(r, g, b):
     if (r == 0) and (g == 0) and (b == 0):
         return 0, 0, 0, 1
@@ -30,15 +31,13 @@ def rgb_to_cmyk(r, g, b):
 
     return c, m, y, k
 
-
 def calculate_percentage(c, m, y, k):
     total_ink = c + m + y + k
-    c_percent = (c / total_ink) * 10 * 100
-    m_percent = (m / total_ink) * 10 * 100
-    y_percent = (y / total_ink) * 10 * 100
-    k_percent = (k / total_ink) * 10 * 100
+    c_percent = (c / total_ink) * 100
+    m_percent = (m / total_ink) * 100
+    y_percent = (y / total_ink) * 100
+    k_percent = (k / total_ink) * 100
     return c_percent, m_percent, y_percent, k_percent
-
 
 class Canvas():
     def __init__(self, src, nb_color, pixel_size=4000):
@@ -155,31 +154,30 @@ if uploaded_file is not None:
 
       
         # Mostrar paleta de cores
-        for i, color in enumerate(colors):
-            color_block = np.ones((50, 50, 3), np.uint8) * color[::-1]  # Cores em formato BGR
-            st.image(color_block, width=50)
+            for i, color in enumerate(colors):
+                color_block = np.ones((50, 50, 3), np.uint8) * color[::-1]  # Cores em formato BGR
+                st.image(color_block, width=50)
 
-            # Cálculo das proporções das cores CMYK
-            r, g, b = color
-            c, m, y, k = rgb_to_cmyk(r, g, b)
-            percentage = calculate_percentage(c, m, y, k)
+                # Cálculo das proporções das cores CMYK
+                r, g, b = color
+                c, m, y, k = rgb_to_cmyk(r, g, b)
+                c_percent, m_percent, y_percent, k_percent = calculate_percentage(c, m, y, k)
 
-            st.write(f"""
-            A cor {i+1} tem os valores RGB ({int(r)}, {int(g)}, {int(b)}).
-            Ela pode ser convertida para o modelo CMYK da seguinte forma:
+                st.write(f"""
+                A cor {i+1} tem os valores RGB ({int(r)}, {int(g)}, {int(b)}).
+                Ela pode ser convertida para o modelo CMYK da seguinte forma:
 
-            Ciano (C): {c*100:.2f}%
-            Magenta (M): {m*100:.2f}%
-            Amarelo (Y): {y*100:.2f}%
-            Preto (K): {k*100:.2f}%
+                Ciano (C): {c_percent:.2f}%
+                Magenta (M): {m_percent:.2f}%
+                Amarelo (Y): {y_percent:.2f}%
+                Preto (K): {k_percent:.2f}%
 
-
-            Percentual de 10 ml para cada cor:
-            Ciano (C): {c_percent * 10:.2f} ml
-            Magenta (M): {m_percent * 10:.2f} ml
-            Amarelo (Y): {y_percent * 10:.2f} ml
-            Preto (K): {k_percent * 10:.2f} ml
-            """)
+                Percentual de 10 ml para cada cor:
+                Ciano (C): {c_percent * 0.1:.2f} ml
+                Magenta (M): {m_percent * 0.1:.2f} ml
+                Amarelo (Y): {y_percent * 0.1:.2f} ml
+                Preto (K): {k_percent * 0.1:.2f} ml
+                """)
 
         result_bytes = cv2.imencode('.jpg', result)[1].tobytes()
         st.download_button(
