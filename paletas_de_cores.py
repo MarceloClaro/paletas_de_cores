@@ -33,8 +33,12 @@ def rgb_to_cmyk(r, g, b):
 
 def calculate_percentage(c, m, y, k):
     total_ink = c + m + y + k
-    percentage = total_ink * 10  # 10 ml de cor
-    return percentage
+    c_percent = (c / total_ink) * 10 * 100
+    m_percent = (m / total_ink) * 10 * 100
+    y_percent = (y / total_ink) * 10 * 100
+    k_percent = (k / total_ink) * 10 * 100
+    return c_percent, m_percent, y_percent, k_percent
+
 
 class Canvas():
     def __init__(self, src, nb_color, pixel_size=4000):
@@ -169,7 +173,12 @@ if uploaded_file is not None:
             Amarelo (Y): {y*100:.2f}%
             Preto (K): {k*100:.2f}%
 
-            Porcentagem em 10 ml de cor: {percentage:.2f}%
+
+            Percentual de 10 ml para cada cor:
+            Ciano (C): {c_percent * 10:.2f} ml
+            Magenta (M): {m_percent * 10:.2f} ml
+            Amarelo (Y): {y_percent * 10:.2f} ml
+            Preto (K): {k_percent * 10:.2f} ml
             """)
 
         result_bytes = cv2.imencode('.jpg', result)[1].tobytes()
