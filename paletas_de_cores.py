@@ -173,9 +173,7 @@ if uploaded_file is not None:
             r, g, b = color
             c, m, y, k = rgb_to_cmyk(r, g, b)
             c_ml, m_ml, y_ml, k_ml = calculate_ml(c, m, y, k, total_ml)
-            # Conversão para o sistema Munsell
-            rgb = [r / 255, g / 255, b / 255]
-            munsell = colour.RGB_to_Munsell(rgb)
+
 
             st.write(f"""
             A cor {i+1} tem os valores RGB ({int(r)}, {int(g)}, {int(b)}).
@@ -186,10 +184,6 @@ if uploaded_file is not None:
             Amarelo (Y): {y_ml:.2f} ml
             Preto (K): {k_ml:.2f} ml
 
-            No sistema Munsell:
-            Hue: {munsell[0]}
-            Value: {munsell[1]}
-            Chroma: {munsell[2]}
             """)
 
 
