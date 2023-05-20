@@ -4,6 +4,6 @@ numpy==1.19.5
 matplotlib
 scikit-learn
 seaborn
-colour>=0.3.16
+colour-science[graphviz, plotting]
 
 
