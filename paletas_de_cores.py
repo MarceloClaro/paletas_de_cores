@@ -138,7 +138,33 @@ if uploaded_file is not None:
             rgb_color = tuple(int(c * 255) for c in color)
             st.image(color_block, caption=f'Cor {i+1} - RGB: {rgb_color}', width=50)
             st.image(color_block, caption=f'Cor {i+1}, RGB: ({int(color[0])}, {int(color[1])}, {int(color[2])})', width=50)
-           
+             # Mostrar paleta de cores
+            for i, color in enumerate(colors):
+                color_block = np.ones((50, 50, 3), np.uint8) * color[::-1]  # Cores em formato BGR
+                st.image(color_block, width=50)
+
+                # Cálculo das proporções das cores primárias
+                r, g, b = color
+                total = r + g + b
+                r_pct = round((r/total)*100, 2)
+                g_pct = round((g/total)*100, 2)
+                b_pct = round((b/total)*100, 2)
+
+                st.write(f"""
+                A cor {i+1} tem os valores RGB ({int(r)}, {int(g)}, {int(b)}).
+                Ela pode ser obtida a partir das cores primárias da seguinte forma:
+
+                Vermelho (R): {int(r)} - {r_pct}%
+                Verde (G): {int(g)} - {g_pct}%
+                Azul (B): {int(b)} - {b_pct}%
+
+                No sistema de cores RGB, cada componente de cor (vermelho, verde e azul) pode ter um valor entre 0 e 255.
+                Portanto, a cor ({int(r)}, {int(g)}, {int(b)}) é composta por essas quantidades de vermelho, verde e azul.
+
+                No modelo RGB, as cores são adicionadas juntas para criar novas cores, e todas as três cores primárias juntas em sua intensidade máxima resultam em branco.
+                Portanto, é uma combinação de várias intensidades de vermelho, verde e azul que cria essa cor específica.
+                """)
+     
 
         result_bytes = cv2.imencode('.jpg', result)[1].tobytes()
         st.download_button(
