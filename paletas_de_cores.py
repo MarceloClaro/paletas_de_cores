@@ -176,12 +176,12 @@ if uploaded_file is not None:
 
 
             st.write(f"""
-            PALETAS DE COR PARA: {total_ml:.2f} ml
-            A cor {i+1} tem os valores RGB ({int(r)}, {int(g)}, {int(b)}).
-            Ela pode ser convertida para o modelo CMYK da seguinte forma:
+            PALETAS DE COR PARA: {total_ml:.2f} ml.
+            
+            A cor pode ser alcançada pela combinação das cores primárias do modelo CMYK, utilizando a seguinte dosagem:
 
-            Ciano (C): {c_ml:.2f} ml
-            Magenta (M): {m_ml:.2f} ml
+            Ciano (Azul) (C): {c_ml:.2f} ml
+            Magenta (Vermelho) (M): {m_ml:.2f} ml
             Amarelo (Y): {y_ml:.2f} ml
             Preto (K): {k_ml:.2f} ml
 
