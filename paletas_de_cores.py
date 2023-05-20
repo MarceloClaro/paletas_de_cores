@@ -103,9 +103,11 @@ st.image("clube.png")  # Adiciona a imagem no topo do app
 st.title('Gerador de Paleta de Cores para Pintura por Números ')
 st.subheader("Sketching and concept development")
 st.subheader("""
+Autor: Marcelo Claro
+
 https://orcid.org/0000-0001-8996-2887
 
-marcelo.laranjeira@prof.educrateus.com.br
+marceloclaro@geomaker.org
 
 Whatsapp:(88)98158-7145 (https://www.geomaker.org/)
 """)
