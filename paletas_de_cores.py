@@ -152,27 +152,17 @@ if uploaded_file is not None:
             # Cálculo das proporções das cores CMYK
             r, g, b = color
             c, m, y, k = rgb_to_cmyk(r, g, b)
-            c_ml, m_ml, y_ml, k_ml = calculate_ml(c, m, y, k, total_ml)            
-            
 
+            st.write(f"""
+            A cor {i+1} tem os valores RGB ({int(r)}, {int(g)}, {int(b)}).
+            Ela pode ser convertida para o modelo CMYK da seguinte forma:
 
-            cluster_indices = np.where(np.all(clusters == color, axis=1))[0]
-            if cluster_indices.size > 0:
-                cluster = cluster_indices[0]
-                color_area = np.count_nonzero(segmented_image.reshape(-1, 3) == color)
-                cluster_percentage = (color_area / segmented_image.size) * 100
-
-
-
-            st.subheader("Sketching and concept development da paleta de cor")
-            st.markdown(f"**PALETAS DE COR PARA: {total_ml:.2f} ml.**")
-            st.markdown("A cor pode ser alcançada pela combinação das cores primárias do modelo CMYK, utilizando a seguinte dosagem:")
-            st.markdown(f"- Ciano (Azul) (C): {c_ml:.2f} ml")
-            st.markdown(f"- Magenta (Vermelho) (M): {m_ml:.2f} ml")
-            st.markdown(f"- Amarelo (Y): {y_ml:.2f} ml")
-            st.markdown(f"- Preto (K): {k_ml:.2f} ml")
-            st.markdown(f"Cluster da cor na imagem segmentada: {cluster}")
-            st.markdown(f"Percentual de área na imagem segmentada: {cluster_percentage:.2f}%")        
+            Ciano (C): {c*100:.2f}%
+            Magenta (M): {m*100:.2f}%
+            Amarelo (Y): {y*100:.2f}%
+            Preto (K): {k*100:.2f}%
+            """)
+        
 
         result_bytes = cv2.imencode('.jpg', result)[1].tobytes()
         st.download_button(
