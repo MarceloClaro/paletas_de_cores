@@ -167,7 +167,7 @@ if uploaded_file is not None:
             Preto (K): {k*100:.2f}%
 
             Porcentagem em 10 ml de cor: {percentage:.2f}%
-        
+            """)
 
         result_bytes = cv2.imencode('.jpg', result)[1].tobytes()
         st.download_button(
