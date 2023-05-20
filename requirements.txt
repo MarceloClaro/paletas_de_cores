@@ -4,3 +4,4 @@ numpy
 matplotlib
 scikit-learn
 seaborn
+colour-science==0.3.16
