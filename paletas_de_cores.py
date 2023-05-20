@@ -153,19 +153,15 @@ if uploaded_file is not None:
                 cluster_percentage = (color_area / segmented_image.size) * 100
 
                 st.subheader("Sketching and concept development da paleta de cor")
-                st.write(f"""
-                PALETAS DE COR PARA: {total_ml:.2f} ml.
+                st.write(f"PALETAS DE COR PARA: {total_ml:.2f} ml.")
+                st.write("A cor pode ser alcançada pela combinação das cores primárias do modelo CMYK, utilizando a seguinte dosagem:")
+                st.write(f"Ciano (Azul) (C): {c_ml:.2f} ml")
+                st.write(f"Magenta (Vermelho) (M): {m_ml:.2f} ml")
+                st.write(f"Amarelo (Y): {y_ml:.2f} ml")
+                st.write(f"Preto (K): {k_ml:.2f} ml")
+                st.write(f"Cluster da cor na imagem segmentada: {cluster}")
+                st.write(f"Percentual de área na imagem segmentada: {cluster_percentage:.2f}%")
 
-                A cor pode ser alcançada pela combinação das cores primárias do modelo CMYK, utilizando a seguinte dosagem:
-
-                Ciano (Azul) (C): {c_ml:.2f} ml
-                Magenta (Vermelho) (M): {m_ml:.2f} ml
-                Amarelo (Y): {y_ml:.2f} ml
-                Preto (K): {k_ml:.2f} ml
-
-                Cluster da cor na imagem segmentada: {cluster}
-                Percentual de área na imagem segmentada: {cluster_percentage:.2f}%
-                """)
 
         result_bytes = cv2.imencode('.jpg', result)[1].tobytes()
         st.download_button(
