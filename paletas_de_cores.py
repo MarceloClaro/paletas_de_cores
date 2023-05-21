@@ -166,6 +166,7 @@ if uploaded_file is not None:
       
         # Mostrar paleta de cores
         for i, color in enumerate(colors):
+             st.subheader("Sketching and concept development da paleta de cor")
             color_block = np.ones((50, 50, 3), np.uint8) * color[::-1]  # Cores em formato BGR
             st.image(color_block, caption=f'Cor {i+1}', width=50)
 
@@ -179,7 +180,7 @@ if uploaded_file is not None:
             total_area = segmented_image.shape[0] * segmented_image.shape[1]
             color_percentage = (color_area / total_area) * 100
             
-            st.subheader("Sketching and concept development da paleta de cor")
+          
             st.write(f"""
             PALETAS DE COR PARA: {total_ml:.2f} ml.
             
