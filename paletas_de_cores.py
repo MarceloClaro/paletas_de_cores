@@ -165,8 +165,9 @@ if uploaded_file is not None:
 
       
         # Mostrar paleta de cores
+        st.subheader("Sketching and concept development da paleta de cor")
         for i, color in enumerate(colors):
-             st.subheader("Sketching and concept development da paleta de cor")
+             
             color_block = np.ones((50, 50, 3), np.uint8) * color[::-1]  # Cores em formato BGR
             st.image(color_block, caption=f'Cor {i+1}', width=50)
 
@@ -175,7 +176,7 @@ if uploaded_file is not None:
             c, m, y, k = rgb_to_cmyk(r, g, b)
             c_ml, m_ml, y_ml, k_ml = calculate_ml(c, m, y, k, total_ml)
 
-                # Calcular a área da cor na imagem segmentada
+            # Calcular a área da cor na imagem segmentada
             color_area = np.count_nonzero(np.all(segmented_image == color, axis=-1))
             total_area = segmented_image.shape[0] * segmented_image.shape[1]
             color_percentage = (color_area / total_area) * 100
