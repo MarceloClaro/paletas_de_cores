@@ -26,9 +26,9 @@ def rgb_to_cmyk(r, g, b):
     y = (y - k) / (1 - k) if (1 - k) != 0 else 0
     return c, m, y, k
 
-# Exemplo de cálculo da cor branca
-r_white, g_white, b_white = 255, 255, 255
-c_white, m_white, y_white, k_white = rgb_to_cmyk(r_white, g_white, b_white)
+    # Exemplo de cálculo da cor branca
+    r_white, g_white, b_white = 255, 255, 255
+    c_white, m_white, y_white, k_white = rgb_to_cmyk(r_white, g_white, b_white)
 
 
 def calculate_ml(c, m, y, k, total_ml):
