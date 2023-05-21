@@ -175,6 +175,7 @@ if uploaded_file is not None:
         st.write(f"Magenta (Vermelho) (M): {m_ml:.2f} ml")
         st.write(f"Amarelo (Y): {y_ml:.2f} ml")
         st.write(f"Preto (K): {k_ml:.2f} ml")
+        """)
 
 
         result_bytes = cv2.imencode('.jpg', result)[1].tobytes()
