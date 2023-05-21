@@ -30,13 +30,6 @@ def rgb_to_cmyk(r, g, b):
     r_white, g_white, b_white = 255, 255, 255
     c_white, m_white, y_white, k_white = rgb_to_cmyk(r_white, g_white, b_white)
 
-
-def calculate_ml(c, m, y, k, total_ml):
-    total_ink = c + m + y + k
-    c_ml = (c / total_ink) * total_ml
-    m_ml = (m / total_ink) * total_ml
-    y_ml = (y / total_ink) * total_ml
-    k_ml = (k / total_ink) * total_ml
     return c_ml, m_ml, y_ml, k_ml
 
 class Canvas():
@@ -165,40 +158,23 @@ if uploaded_file is not None:
         st.image(result, caption='Imagem Resultante', use_column_width=True)
         st.image(segmented_image, caption='Imagem Segmentada', use_column_width=True)
 
-      
-        # Mostrar paleta de cores
-        st.subheader("Sketching and concept development da paleta de cor")
+        st.subheader("Paleta de Cores")
         for i, color in enumerate(colors):
-             
-            color_block = np.ones((50, 50, 3), np.uint8) * color[::-1]  # Cores em formato BGR
-            st.image(color_block, caption=f'Cor {i+1}', width=50)
+            st.write(f"Cor {i+1}: RGB({color[0]}, {color[1]}, {color[2]})")
 
-            # Cálculo das proporções das cores CMYK
-            r, g, b = color
-            c, m, y, k = rgb_to_cmyk(r, g, b)
-            c_ml, m_ml, y_ml, k_ml = calculate_ml(c, m, y, k, total_ml)
+        
+        # Cálculo das proporções das cores CMYK
+        r, g, b = color
+        c, m, y, k = rgb_to_cmyk(r, g, b)
+        c_ml, m_ml, y_ml, k_ml = calculate_ml(c, m, y, k, total_ml)            
+        st.write(f"""
+        PALETAS DE COR PARA: {total_ml:.2f} ml.
 
-            # Calcular a área da cor na imagem segmentada
-            color_area = np.count_nonzero(np.all(segmented_image == color, axis=-1))
-            total_area = segmented_image.shape[0] * segmented_image.shape[1]
-            color_percentage = (color_area / total_area) * 100
-
-                      # Mostrar paleta de cores e seus valores RGB
-            st.subheader("Paleta de Cores")
-            for i, color in enumerate(colors):
-                st.write(f"Cor {i+1}: RGB({color[0]}, {color[1]}, {color[2]})")
-
-            st.write(f"""
-            PALETAS DE COR PARA: {total_ml:.2f} ml.
-            
-            A cor pode ser alcançada pela combinação das cores primárias do modelo CMYK, utilizando a seguinte dosagem:
-
-            Ciano (Azul) (C): {c_ml:.2f} ml
-            Magenta (Vermelho) (M): {m_ml:.2f} ml
-            Amarelo (Y): {y_ml:.2f} ml
-            Preto (K): {k_ml:.2f} ml
-                    
-            """)
+        
+        st.write(f"Ciano (Azul) (C): {c_ml:.2f} ml")
+        st.write(f"Magenta (Vermelho) (M): {m_ml:.2f} ml")
+        st.write(f"Amarelo (Y): {y_ml:.2f} ml")
+        st.write(f"Preto (K): {k_ml:.2f} ml")
 
 
         result_bytes = cv2.imencode('.jpg', result)[1].tobytes()
