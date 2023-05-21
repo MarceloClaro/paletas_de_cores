@@ -182,8 +182,12 @@ if uploaded_file is not None:
             color_area = np.count_nonzero(np.all(segmented_image == color, axis=-1))
             total_area = segmented_image.shape[0] * segmented_image.shape[1]
             color_percentage = (color_area / total_area) * 100
-            
-          
+
+                      # Mostrar paleta de cores e seus valores RGB
+            st.subheader("Paleta de Cores")
+            for i, color in enumerate(colors):
+                st.write(f"Cor {i+1}: RGB({color[0]}, {color[1]}, {color[2]})")
+
             st.write(f"""
             PALETAS DE COR PARA: {total_ml:.2f} ml.
             
