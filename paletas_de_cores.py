@@ -13,21 +13,23 @@ import base64  # Essa é uma ferramenta que nos ajuda a converter dados.
 
 # Aqui estamos criando uma nova ferramenta que chamamos de "Canvas".
 # Isso nos ajuda a lidar com imagens e cores.
-
+# Função para converter RGB para CMYK
 def rgb_to_cmyk(r, g, b):
-    if (r == 0) and (g == 0) and (b == 0):
-        return 0, 0, 0, 1
-    c = 1 - r / 255
-    m = 1 - g / 255
-    y = 1 - b / 255
-
-    min_cmy = min(c, m, y)
-    c = (c - min_cmy) / (1 - min_cmy)
-    m = (m - min_cmy) / (1 - min_cmy)
-    y = (y - min_cmy) / (1 - min_cmy)
-    k = min_cmy
-
+    if (r == 255) and (g == 255) and (b == 255):
+        return 0, 0, 0, 0
+    c = 1 - (r / 255)
+    m = 1 - (g / 255)
+    y = 1 - (b / 255)
+    k = min(c, m, y)
+    c = (c - k) / (1 - k) if (1 - k) != 0 else 0
+    m = (m - k) / (1 - k) if (1 - k) != 0 else 0
+    y = (y - k) / (1 - k) if (1 - k) != 0 else 0
     return c, m, y, k
+
+# Exemplo de cálculo da cor branca
+r_white, g_white, b_white = 255, 255, 255
+c_white, m_white, y_white, k_white = rgb_to_cmyk(r_white, g_white, b_white)
+
 
 def calculate_ml(c, m, y, k, total_ml):
     total_ink = c + m + y + k
