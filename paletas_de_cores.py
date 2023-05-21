@@ -1,3 +1,6 @@
+# Importando todas as coisas necessárias para o nosso programa funcionar.
+# Esses são como os blocos de construção que vamos usar para fazer o nosso programa.
+
 import numpy as np  # Esta é uma ferramenta para lidar com listas de números.
 from sklearn.cluster import KMeans  # Essa é uma ferramenta que nos ajuda a encontrar grupos de coisas.
 from sklearn.utils import shuffle  # Isso nos ajuda a misturar coisas.
@@ -10,22 +13,21 @@ import base64  # Essa é uma ferramenta que nos ajuda a converter dados.
 
 # Aqui estamos criando uma nova ferramenta que chamamos de "Canvas".
 # Isso nos ajuda a lidar com imagens e cores.
-# Função para converter RGB para CMYK
-def rgb_to_cmyk(r, g, b):
-    if (r == 255) and (g == 255) and (b == 255):
-        return 0, 0, 0, 0
-    c = 1 - (r / 255)
-    m = 1 - (g / 255)
-    y = 1 - (b / 255)
-    k = min(c, m, y)
-    c = (c - k) / (1 - k) if (1 - k) != 0 else 0
-    m = (m - k) / (1 - k) if (1 - k) != 0 else 0
-    y = (y - k) / (1 - k) if (1 - k) != 0 else 0
-    return c, m, y, k
-   # cálculo da cor branca
-   r_white, g_white, b_white = 255, 255, 255
-   c_white, m_white, y_white, k_white = rgb_to_cmyk(r_white, g_white, b_white)
 
+def rgb_to_cmyk(r, g, b):
+    if (r == 0) and (g == 0) and (b == 0):
+        return 0, 0, 0, 1
+    c = 1 - r / 255
+    m = 1 - g / 255
+    y = 1 - b / 255
+
+    min_cmy = min(c, m, y)
+    c = (c - min_cmy) / (1 - min_cmy)
+    m = (m - min_cmy) / (1 - min_cmy)
+    y = (y - min_cmy) / (1 - min_cmy)
+    k = min_cmy
+
+    return c, m, y, k
 
 def calculate_ml(c, m, y, k, total_ml):
     total_ink = c + m + y + k
@@ -163,9 +165,7 @@ if uploaded_file is not None:
 
       
         # Mostrar paleta de cores
-        st.subheader("Sketching and concept development da paleta de cor")
         for i, color in enumerate(colors):
-             
             color_block = np.ones((50, 50, 3), np.uint8) * color[::-1]  # Cores em formato BGR
             st.image(color_block, caption=f'Cor {i+1}', width=50)
 
@@ -174,12 +174,12 @@ if uploaded_file is not None:
             c, m, y, k = rgb_to_cmyk(r, g, b)
             c_ml, m_ml, y_ml, k_ml = calculate_ml(c, m, y, k, total_ml)
 
-            # Calcular a área da cor na imagem segmentada
+                # Calcular a área da cor na imagem segmentada
             color_area = np.count_nonzero(np.all(segmented_image == color, axis=-1))
             total_area = segmented_image.shape[0] * segmented_image.shape[1]
             color_percentage = (color_area / total_area) * 100
             
-          
+            st.subheader("Sketching and concept development da paleta de cor")
             st.write(f"""
             PALETAS DE COR PARA: {total_ml:.2f} ml.
             
