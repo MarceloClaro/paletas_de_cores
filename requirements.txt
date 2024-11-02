@@ -4,4 +4,4 @@ numpy==1.19.5
 matplotlib
 scikit-learn
 seaborn
-
+setuptools==65.5.0
