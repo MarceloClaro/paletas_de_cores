@@ -65,24 +65,21 @@ color_archetypes = {
     (255, 165, 0): 'Arquétipo do Explorador - Entusiasmo, aventura e vitalidade'     # Laranja
 }
 
-# Função para calcular o percentual de cada cor na imagem
-def calculate_color_percentage(segmented_image, color):
-    color_area = np.count_nonzero(np.all(segmented_image == color, axis=-1))
-    total_area = segmented_image.shape[0] * segmented_image.shape[1]
-    return (color_area / total_area) * 100
-
+# Classe Canvas para manipulação da imagem e quantificação de cores
 class Canvas():
     def __init__(self, src, nb_color, pixel_size=4000):
         self.src = cv2.cvtColor(src, cv2.COLOR_BGR2RGB)
         self.nb_color = nb_color
         self.tar_width = pixel_size
         self.colormap = []
+        self.color_percentages = []
 
     def generate(self):
         im_source = self.resize()
         clean_img = self.cleaning(im_source)
         clean_img = np.array(clean_img, dtype="uint8") / 255
-        quantified_image, colors = self.quantification(clean_img)
+        quantified_image, colors, color_percentages = self.quantification(clean_img)
+        self.color_percentages = color_percentages
         canvas = np.ones(quantified_image.shape[:2], dtype="uint8") * 255
 
         for ind, color in enumerate(colors):
@@ -122,8 +119,10 @@ class Canvas():
         sample = shuffle(flattened)[:1000]
         kmeans = KMeans(n_clusters=self.nb_color).fit(sample)
         labels = kmeans.predict(flattened)
+        unique, counts = np.unique(labels, return_counts=True)  # Conta pixels por cluster
+        color_percentages = counts / len(flattened) * 100       # Percentual de cada cor
         new_img = self.recreate_image(kmeans.cluster_centers_, labels, width, height)
-        return new_img, kmeans.cluster_centers_
+        return new_img, kmeans.cluster_centers_, color_percentages
 
     def recreate_image(self, codebook, labels, width, height):
         vfunc = lambda x: codebook[labels[x]]
@@ -158,9 +157,8 @@ if uploaded_file is not None:
         st.image(segmented_image, caption='Imagem Segmentada', use_column_width=True)
 
         st.subheader("Paleta de Cores e Harmonias")
-        for i, color in enumerate(colors):
+        for i, (color, percentage) in enumerate(zip(colors, canvas.color_percentages)):
             color_rgb = [int(c * 255) for c in color]
-            color_percentage = calculate_color_percentage(segmented_image, color_rgb)
 
             # Associa cor ao arquétipo com base na proximidade
             archetype_description = "Desconhecido"
@@ -171,7 +169,7 @@ if uploaded_file is not None:
             
             with st.expander(f"Cor {i+1} - Arquétipo: {archetype_description.split('-')[0]}"):
                 st.write(f"**Significado Psicológico:** {archetype_description}")
-                st.write(f"**Percentual na Imagem:** {color_percentage:.2f}%")
+                st.write(f"**Percentual na Imagem:** {percentage:.2f}%")
                 color_block = np.ones((50, 50, 3), np.uint8) * color_rgb[::-1]
                 st.image(color_block, width=50)
 
