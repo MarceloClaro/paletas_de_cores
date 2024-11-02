@@ -58,15 +58,59 @@ def generate_color_harmony(color, harmony_type):
 
 # Dicionário com significados dos arquétipos junguianos e valores RGB de exemplo
 color_archetypes = {
-    (255, 0, 0): 'Arquétipo do Herói - Energia, paixão e ação',            
-    (0, 0, 255): 'Arquétipo do Sábio - Tranquilidade, confiança e sabedoria',
-    (255, 255, 0): 'Arquétipo do Bobo - Otimismo, alegria e criatividade',    
-    (0, 255, 0): 'Arquétipo do Cuidador - Crescimento, harmonia e renovação', 
-    (0, 0, 0): 'Arquétipo da Sombra - Mistério, poder e sofisticação',        
-    (255, 255, 255): 'Arquétipo do Inocente - Pureza, simplicidade e novos começos',
-    (128, 0, 128): 'Arquétipo do Mago - Espiritualidade, mistério e transformação', 
-    (255, 165, 0): 'Arquétipo do Explorador - Entusiasmo, aventura e vitalidade', 
+    (255, 0, 0): 'Arquétipo do Herói - Energia, paixão e ação',          # Vermelho
+    (0, 0, 255): 'Arquétipo do Sábio - Tranquilidade, confiança e sabedoria', # Azul
+    (255, 255, 0): 'Arquétipo do Bobo - Otimismo, alegria e criatividade',    # Amarelo
+    (0, 255, 0): 'Arquétipo do Cuidador - Crescimento, harmonia e renovação', # Verde
+    (0, 0, 0): 'Arquétipo da Sombra - Mistério, poder e sofisticação',        # Preto
+    (255, 255, 255): 'Arquétipo do Inocente - Pureza, simplicidade e novos começos', # Branco
+    (128, 0, 128): 'Arquétipo do Mago - Espiritualidade, mistério e transformação',   # Roxo
+    (255, 165, 0): 'Arquétipo do Explorador - Entusiasmo, aventura e vitalidade',      # Laranja
+    (75, 0, 130): 'Arquétipo do Rebelde - Independência, poder e transformação',       # Índigo
+    (255, 192, 203): 'Arquétipo do Amante - Amor, compaixão e sensualidade',           # Rosa
+    (128, 128, 128): 'Arquétipo do Homem Comum - Neutralidade, simplicidade e realismo', # Cinza
+    (255, 215, 0): 'Arquétipo do Governante - Autoridade, controle e responsabilidade',  # Dourado
+    (139, 69, 19): 'Arquétipo da Terra - Segurança, conforto e resistência',            # Marrom
+    (192, 192, 192): 'Arquétipo da Sabedoria - Discrição, equilíbrio e sofisticação',   # Prata
+    (255, 105, 180): 'Arquétipo do Amante Jovial - Romance, empatia e diversão',        # Rosa Choque
+    (0, 255, 255): 'Arquétipo da Liberdade - Integração, expansão e conexão',           # Ciano
+    (34, 139, 34): 'Arquétipo do Construtor - Crescimento, perseverança e estabilidade', # Verde Escuro
+    (210, 105, 30): 'Arquétipo do Alquimista - Transformação, criatividade e poder',    # Chocolate
+    (123, 104, 238): 'Arquétipo do Visionário - Imaginação, inovação e possibilidades', # Azul Elétrico
+    (250, 128, 114): 'Arquétipo da Paixão - Vitalidade, desejo e entusiasmo',           # Salmão
+    (46, 139, 87): 'Arquétipo da Cura - Renovação, tranquilidade e naturalidade',       # Verde Marinho
+    (105, 105, 105): 'Arquétipo da Neutralidade - Modéstia, resiliência e estabilidade', # Cinza Escuro
+    (255, 69, 0): 'Arquétipo do Guerreiro - Coragem, impulso e força de vontade',       # Laranja Avermelhado
+    (218, 112, 214): 'Arquétipo do Criativo - Originalidade, delicadeza e imaginação',  # Orquídea
+    (64, 224, 208): 'Arquétipo do Pacificador - Serenidade, equilíbrio e paz',          # Turquesa
+    (147, 112, 219): 'Arquétipo do Idealista - Inspiração, aspiração e sonho',          # Roxo Claro
+    (0, 191, 255): 'Arquétipo do Comunicador - Clareza, expressão e intercâmbio',       # Azul Celeste
+    (255, 20, 147): 'Arquétipo da Musa - Inspiração, fascínio e expressão artística',   # Rosa Escuro
+    (186, 85, 211): 'Arquétipo do Místico - Magia, mistério e introspecção',            # Ameixa
+    (127, 255, 0): 'Arquétipo do Naturalista - Sustentabilidade, vida e vigor',         # Verde Limão
+    (255, 140, 0): 'Arquétipo da Criatividade - Energia, brilho e expressão criativa',  # Laranja Escuro
+    (143, 188, 143): 'Arquétipo do Harmonizador - Equilíbrio, harmonia e paz interior', # Verde Marinho Claro
+    (255, 248, 220): 'Arquétipo da Pureza - Calma, clareza e sinceridade',              # Bege
+    (210, 180, 140): 'Arquétipo da Estabilidade - Segurança, tradição e consistência',  # Castanho Claro
+    (238, 232, 170): 'Arquétipo da Prosperidade - Sucesso, confiança e abundância',     # Amarelo Palha
+    (152, 251, 152): 'Arquétipo do Curador - Renovação, saúde e regeneração',           # Verde Claro
+    (245, 222, 179): 'Arquétipo do Apoio - Hospitalidade, conforto e calor',            # Trigo
+    (250, 235, 215): 'Arquétipo da Simplicidade - Pureza, honestidade e clareza',       # Branco Antigo
+    (124, 252, 0): 'Arquétipo da Natureza - Crescimento, vitalidade e equilíbrio',      # Verde-Grama
+    (250, 250, 210): 'Arquétipo da Calma - Tranquilidade, serenidade e estabilidade',   # Amarelo Claro
+    (255, 239, 213): 'Arquétipo da Acolhida - Carinho, compreensão e receptividade',    # Papaya Whip
+    (244, 164, 96): 'Arquétipo da Aventura - Descoberta, emoção e desafio',             # Areia
+    (176, 224, 230): 'Arquétipo da Sensibilidade - Serenidade, equilíbrio e empatia',   # Azul Pálido
+    (32, 178, 170): 'Arquétipo da Expansão - Progresso, mudança e liberdade',           # Verde-Água
+    (70, 130, 180): 'Arquétipo do Realizador - Determinação, visão e resiliência',      # Azul Aço
+    (169, 169, 169): 'Arquétipo da Resiliência - Força, estabilidade e consistência',   # Cinza Claro
+    (250, 128, 114): 'Arquétipo da Paixão - Desejo, calor e ação',                      # Salmão
+    (255, 228, 225): 'Arquétipo da Delicadeza - Afeto, compreensão e bondade',          # Rosado
+    (240, 230, 140): 'Arquétipo da Prosperidade - Otimismo, positividade e energia',    # Amarelo Claro
+    (255, 218, 185): 'Arquétipo da Alegria - Vibração, luz e entusiasmo',               # Pêssego
+    (218, 165, 32): 'Arquétipo da Sabedoria - Experiência, valor e riqueza',            # Dourado Escuro
 }
+
 
 # Função para encontrar o arquétipo mais próximo usando tolerância
 def find_closest_archetype(color_rgb, color_archetypes, tolerance):
