@@ -65,8 +65,8 @@ color_archetypes = {
     (255, 165, 0): 'Arquétipo do Explorador - Entusiasmo, aventura e vitalidade'     # Laranja
 }
 
-# Função para criar uma imagem com borda ao redor da cor
-def create_color_block_with_border(color_rgb, border_color=(255, 255, 255), border_size=5, size=(50, 50)):
+# Função para criar uma imagem com borda preta de 1pt ao redor da cor
+def create_color_block_with_border(color_rgb, border_color=(0, 0, 0), border_size=2, size=(50, 50)):
     color_block = np.ones((size[0], size[1], 3), np.uint8) * color_rgb[::-1]  # Inverter RGB para BGR
     bordered_block = cv2.copyMakeBorder(color_block, border_size, border_size, border_size, border_size,
                                         cv2.BORDER_CONSTANT, value=border_color)
@@ -178,8 +178,8 @@ if uploaded_file is not None:
                 st.write(f"**Significado Psicológico:** {archetype_description}")
                 st.write(f"**Percentual na Imagem:** {percentage:.2f}%")
                 
-                # Bloco de cor principal com borda
-                color_block_with_border = create_color_block_with_border(color_rgb)
+                # Bloco de cor principal com borda preta
+                color_block_with_border = create_color_block_with_border(color_rgb, border_color=(0, 0, 0), border_size=2)
                 st.image(color_block_with_border, width=60)
 
                 # Separador entre a cor principal e as harmonias
@@ -189,7 +189,7 @@ if uploaded_file is not None:
                 st.write("**Harmonias de Cor**")
                 harmonized_colors = generate_color_harmony(color_rgb, harmony_type)
                 for j, harmony_color in enumerate(harmonized_colors):
-                    harmony_block_with_border = create_color_block_with_border(harmony_color)
+                    harmony_block_with_border = create_color_block_with_border(harmony_color, border_color=(0, 0, 0), border_size=2)
                     st.image(harmony_block_with_border, caption=f'Harmonia {j + 1} - RGB: {harmony_color}', width=60)
 
         result_bytes = cv2.imencode('.jpg', result)[1].tobytes()
