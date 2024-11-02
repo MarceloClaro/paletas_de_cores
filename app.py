@@ -58,59 +58,57 @@ def generate_color_harmony(color, harmony_type):
 
 # Dicionário com significados dos arquétipos junguianos e valores RGB de exemplo
 color_archetypes = {
-    (255, 0, 0): 'Arquétipo do Herói - Energia, paixão e ação',          # Vermelho
-    (0, 0, 255): 'Arquétipo do Sábio - Tranquilidade, confiança e sabedoria', # Azul
-    (255, 255, 0): 'Arquétipo do Bobo - Otimismo, alegria e criatividade',    # Amarelo
-    (0, 255, 0): 'Arquétipo do Cuidador - Crescimento, harmonia e renovação', # Verde
-    (0, 0, 0): 'Arquétipo da Sombra - Mistério, poder e sofisticação',        # Preto
-    (255, 255, 255): 'Arquétipo do Inocente - Pureza, simplicidade e novos começos', # Branco
-    (128, 0, 128): 'Arquétipo do Mago - Espiritualidade, mistério e transformação',   # Roxo
-    (255, 165, 0): 'Arquétipo do Explorador - Entusiasmo, aventura e vitalidade',      # Laranja
-    (75, 0, 130): 'Arquétipo do Rebelde - Independência, poder e transformação',       # Índigo
-    (255, 192, 203): 'Arquétipo do Amante - Amor, compaixão e sensualidade',           # Rosa
-    (128, 128, 128): 'Arquétipo do Homem Comum - Neutralidade, simplicidade e realismo', # Cinza
-    (255, 215, 0): 'Arquétipo do Governante - Autoridade, controle e responsabilidade',  # Dourado
-    (139, 69, 19): 'Arquétipo da Terra - Segurança, conforto e resistência',            # Marrom
-    (192, 192, 192): 'Arquétipo da Sabedoria - Discrição, equilíbrio e sofisticação',   # Prata
-    (255, 105, 180): 'Arquétipo do Amante Jovial - Romance, empatia e diversão',        # Rosa Choque
-    (0, 255, 255): 'Arquétipo da Liberdade - Integração, expansão e conexão',           # Ciano
-    (34, 139, 34): 'Arquétipo do Construtor - Crescimento, perseverança e estabilidade', # Verde Escuro
-    (210, 105, 30): 'Arquétipo do Alquimista - Transformação, criatividade e poder',    # Chocolate
-    (123, 104, 238): 'Arquétipo do Visionário - Imaginação, inovação e possibilidades', # Azul Elétrico
-    (250, 128, 114): 'Arquétipo da Paixão - Vitalidade, desejo e entusiasmo',           # Salmão
-    (46, 139, 87): 'Arquétipo da Cura - Renovação, tranquilidade e naturalidade',       # Verde Marinho
-    (105, 105, 105): 'Arquétipo da Neutralidade - Modéstia, resiliência e estabilidade', # Cinza Escuro
-    (255, 69, 0): 'Arquétipo do Guerreiro - Coragem, impulso e força de vontade',       # Laranja Avermelhado
-    (218, 112, 214): 'Arquétipo do Criativo - Originalidade, delicadeza e imaginação',  # Orquídea
-    (64, 224, 208): 'Arquétipo do Pacificador - Serenidade, equilíbrio e paz',          # Turquesa
-    (147, 112, 219): 'Arquétipo do Idealista - Inspiração, aspiração e sonho',          # Roxo Claro
-    (0, 191, 255): 'Arquétipo do Comunicador - Clareza, expressão e intercâmbio',       # Azul Celeste
-    (255, 20, 147): 'Arquétipo da Musa - Inspiração, fascínio e expressão artística',   # Rosa Escuro
-    (186, 85, 211): 'Arquétipo do Místico - Magia, mistério e introspecção',            # Ameixa
-    (127, 255, 0): 'Arquétipo do Naturalista - Sustentabilidade, vida e vigor',         # Verde Limão
-    (255, 140, 0): 'Arquétipo da Criatividade - Energia, brilho e expressão criativa',  # Laranja Escuro
-    (143, 188, 143): 'Arquétipo do Harmonizador - Equilíbrio, harmonia e paz interior', # Verde Marinho Claro
-    (255, 248, 220): 'Arquétipo da Pureza - Calma, clareza e sinceridade',              # Bege
-    (210, 180, 140): 'Arquétipo da Estabilidade - Segurança, tradição e consistência',  # Castanho Claro
-    (238, 232, 170): 'Arquétipo da Prosperidade - Sucesso, confiança e abundância',     # Amarelo Palha
-    (152, 251, 152): 'Arquétipo do Curador - Renovação, saúde e regeneração',           # Verde Claro
-    (245, 222, 179): 'Arquétipo do Apoio - Hospitalidade, conforto e calor',            # Trigo
-    (250, 235, 215): 'Arquétipo da Simplicidade - Pureza, honestidade e clareza',       # Branco Antigo
-    (124, 252, 0): 'Arquétipo da Natureza - Crescimento, vitalidade e equilíbrio',      # Verde-Grama
-    (250, 250, 210): 'Arquétipo da Calma - Tranquilidade, serenidade e estabilidade',   # Amarelo Claro
-    (255, 239, 213): 'Arquétipo da Acolhida - Carinho, compreensão e receptividade',    # Papaya Whip
-    (244, 164, 96): 'Arquétipo da Aventura - Descoberta, emoção e desafio',             # Areia
-    (176, 224, 230): 'Arquétipo da Sensibilidade - Serenidade, equilíbrio e empatia',   # Azul Pálido
-    (32, 178, 170): 'Arquétipo da Expansão - Progresso, mudança e liberdade',           # Verde-Água
-    (70, 130, 180): 'Arquétipo do Realizador - Determinação, visão e resiliência',      # Azul Aço
-    (169, 169, 169): 'Arquétipo da Resiliência - Força, estabilidade e consistência',   # Cinza Claro
-    (250, 128, 114): 'Arquétipo da Paixão - Desejo, calor e ação',                      # Salmão
-    (255, 228, 225): 'Arquétipo da Delicadeza - Afeto, compreensão e bondade',          # Rosado
-    (240, 230, 140): 'Arquétipo da Prosperidade - Otimismo, positividade e energia',    # Amarelo Claro
-    (255, 218, 185): 'Arquétipo da Alegria - Vibração, luz e entusiasmo',               # Pêssego
-    (218, 165, 32): 'Arquétipo da Sabedoria - Experiência, valor e riqueza',            # Dourado Escuro
+    (255, 0, 0): 'Arquétipo do Herói - Representa a energia e a paixão intensa, mas também o perigo e a coragem. O vermelho desperta vitalidade, ação e uma força impulsionadora.',  # Vermelho
+    (0, 0, 255): 'Arquétipo do Sábio - A cor da paz, confiança e intelectualidade. O azul inspira calma e profundidade, evocando sentimentos de estabilidade e sabedoria.',  # Azul
+    (255, 255, 0): 'Arquétipo do Bobo - Simboliza a alegria, a leveza e o otimismo. O amarelo ilumina e transmite uma sensação de calor e inovação, mas também pode refletir alerta.',  # Amarelo
+    (0, 255, 0): 'Arquétipo do Cuidador - Associado ao crescimento e à renovação. O verde evoca harmonia e equilíbrio, reforçando a conexão com a natureza e a saúde.',  # Verde
+    (0, 0, 0): 'Arquétipo da Sombra - Reflete mistério, sofisticação e poder. O preto representa o desconhecido, ao mesmo tempo que transmite elegância e intensidade.',  # Preto
+    (255, 255, 255): 'Arquétipo do Inocente - Pureza, simplicidade e novos começos. O branco é universalmente associado à paz, ao recomeço e à sinceridade.',  # Branco
+    (128, 0, 128): 'Arquétipo do Mago - Espiritualidade e transformação. O roxo representa o mistério, a sabedoria mística e a intuição profunda.',  # Roxo
+    (255, 165, 0): 'Arquétipo do Explorador - Vitalidade e aventura. O laranja é dinâmico, trazendo entusiasmo e uma sensação de descoberta e excitação.',  # Laranja
+    (75, 0, 130): 'Arquétipo do Rebelde - Independência e transformação. O índigo reflete introspecção e poder, associado a mudanças profundas e a uma visão pessoal.',  # Índigo
+    (255, 192, 203): 'Arquétipo do Amante - Amor, delicadeza e compaixão. O rosa evoca ternura, sensualidade e conexão emocional.',  # Rosa
+    (128, 128, 128): 'Arquétipo do Homem Comum - Realismo e neutralidade. O cinza simboliza equilíbrio, praticidade e uma presença discreta.',  # Cinza
+    (255, 215, 0): 'Arquétipo do Governante - Autoridade, riqueza e poder. O dourado representa a majestade, a responsabilidade e a confiança.',  # Dourado
+    (139, 69, 19): 'Arquétipo da Terra - Segurança, resistência e tradição. O marrom está associado ao conforto, à estabilidade e à simplicidade.',  # Marrom
+    (192, 192, 192): 'Arquétipo da Sabedoria - Discrição, sofisticação e ponderação. A prata sugere clareza mental e uma elegância reservada.',  # Prata
+    (255, 105, 180): 'Arquétipo do Amante Jovial - Empatia, diversão e romance. O rosa choque é vibrante e reflete uma energia alegre e amigável.',  # Rosa Choque
+    (0, 255, 255): 'Arquétipo da Liberdade - Expansão e conexão. O ciano promove um senso de liberdade e integridade, ampliando horizontes.',  # Ciano
+    (34, 139, 34): 'Arquétipo do Construtor - Perseverança, crescimento e estabilidade. O verde escuro representa força interior e estabilidade.',  # Verde Escuro
+    (210, 105, 30): 'Arquétipo do Alquimista - Criatividade e poder de transformação. O chocolate evoca calor, criatividade e conexão com a terra.',  # Chocolate
+    (123, 104, 238): 'Arquétipo do Visionário - Imaginação e inovação. O azul elétrico sugere possibilidades infinitas e uma mente criativa.',  # Azul Elétrico
+    (250, 128, 114): 'Arquétipo da Paixão - Desejo, entusiasmo e vitalidade. O salmão é envolvente e desperta sentimentos de alegria e intensidade.',  # Salmão
+    (46, 139, 87): 'Arquétipo da Cura - Tranquilidade e regeneração. O verde marinho é calmante e transmite uma sensação de renascimento e paz.',  # Verde Marinho
+    (105, 105, 105): 'Arquétipo da Neutralidade - Resiliência e estabilidade. O cinza escuro é reservado, representando modéstia e força interior.',  # Cinza Escuro
+    (255, 69, 0): 'Arquétipo do Guerreiro - Coragem e força. O laranja avermelhado é audacioso e representa ação e determinação.',  # Laranja Avermelhado
+    (218, 112, 214): 'Arquétipo do Criativo - Imaginação e originalidade. A orquídea reflete uma mente inovadora e o desejo de expressão única.',  # Orquídea
+    (64, 224, 208): 'Arquétipo do Pacificador - Paz e equilíbrio. O turquesa é harmonioso e promove serenidade e uma comunicação pacífica.',  # Turquesa
+    (147, 112, 219): 'Arquétipo do Idealista - Sonho e inspiração. O roxo claro simboliza aspiração elevada e uma visão romântica.',  # Roxo Claro
+    (0, 191, 255): 'Arquétipo do Comunicador - Clareza e intercâmbio. O azul celeste facilita a expressão, promovendo comunicação honesta.',  # Azul Celeste
+    (255, 20, 147): 'Arquétipo da Musa - Fascínio e expressão artística. O rosa escuro representa inspiração e uma atração encantadora.',  # Rosa Escuro
+    (186, 85, 211): 'Arquétipo do Místico - Introspecção e magia. A ameixa reflete mistério e uma sabedoria interior profunda.',  # Ameixa
+    (127, 255, 0): 'Arquétipo do Naturalista - Vigor e sustentabilidade. O verde limão é vibrante e reflete uma conexão ativa com a natureza.',  # Verde Limão
+    (255, 140, 0): 'Arquétipo da Criatividade - Brilho e expressão. O laranja escuro é dinâmico, incentivando a autoexpressão e a inovação.',  # Laranja Escuro
+    (143, 188, 143): 'Arquétipo do Harmonizador - Paz e equilíbrio interior. O verde marinho claro acalma e sugere uma harmonia profunda.',  # Verde Marinho Claro
+    (255, 248, 220): 'Arquétipo da Pureza - Sinceridade e clareza. O bege representa honestidade, calor e uma presença tranquila.',  # Bege
+    (210, 180, 140): 'Arquétipo da Estabilidade - Consistência e tradição. O castanho claro evoca segurança e confiabilidade.',  # Castanho Claro
+    (238, 232, 170): 'Arquétipo da Prosperidade - Abundância e confiança. O amarelo palha é acolhedor e sugere sucesso e crescimento.',  # Amarelo Palha
+    (152, 251, 152): 'Arquétipo do Curador - Saúde e renovação. O verde claro transmite vitalidade e uma sensação de recuperação.',  # Verde Claro
+    (245, 222, 179): 'Arquétipo do Apoio - Hospitalidade e calor. O trigo é acolhedor e promove uma sensação de cuidado e suporte.',  # Trigo
+    (250, 235, 215): 'Arquétipo da Simplicidade - Pureza e clareza. O branco antigo evoca uma beleza atemporal e autenticidade.',  # Branco Antigo
+    (124, 252, 0): 'Arquétipo da Natureza - Vitalidade e equilíbrio. O verde-grama reflete o crescimento contínuo e a harmonia natural.',  # Verde-Grama
+    (250, 250, 210): 'Arquétipo da Calma - Serenidade e estabilidade. O amarelo claro é relaxante, promovendo uma paz constante.',  # Amarelo Claro
+    (255, 239, 213): 'Arquétipo da Acolhida - Receptividade e carinho. O Papaya Whip é suave e transmite um calor acolhedor.',  # Papaya Whip
+    (244, 164, 96): 'Arquétipo da Aventura - Emoção e desafio. A areia inspira descoberta e uma conexão com o desconhecido.',  # Areia
+    (176, 224, 230): 'Arquétipo da Sensibilidade - Equilíbrio e empatia. O azul pálido é delicado e promove compreensão emocional.',  # Azul Pálido
+    (32, 178, 170): 'Arquétipo da Expansão - Progresso e liberdade. O verde-água sugere crescimento e novas oportunidades.',  # Verde-Água
+    (70, 130, 180): 'Arquétipo do Realizador - Determinação e resiliência. O azul aço representa força e uma visão de longo prazo.',  # Azul Aço
+    (169, 169, 169): 'Arquétipo da Resiliência - Estabilidade e força. O cinza claro sugere durabilidade e uma firmeza inabalável.',  # Cinza Claro
+    (255, 228, 225): 'Arquétipo da Delicadeza - Bondade e compreensão. O rosado transmite uma energia gentil e afetuosa.',  # Rosado
+    (240, 230, 140): 'Arquétipo da Prosperidade - Otimismo e energia. O amarelo claro é brilhante e reflete um senso de progresso.',  # Amarelo Claro
+    (255, 218, 185): 'Arquétipo da Alegria - Entusiasmo e luz. O pêssego é vibrante, evocando uma sensação de felicidade contagiante.',  # Pêssego
+    (218, 165, 32): 'Arquétipo da Sabedoria - Riqueza e experiência. O dourado escuro representa conhecimento e valor duradouro.',  # Dourado Escuro
 }
-
 
 # Função para encontrar o arquétipo mais próximo usando tolerância
 def find_closest_archetype(color_rgb, color_archetypes, tolerance):
