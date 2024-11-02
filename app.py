@@ -173,7 +173,11 @@ if uploaded_file is not None:
                 color_block = np.ones((50, 50, 3), np.uint8) * color_rgb[::-1]
                 st.image(color_block, width=50)
 
+                # Separador entre a cor principal e as harmonias
+                st.markdown("---")
+
                 # Exibir harmonias
+                st.write("**Harmonias de Cor**")
                 harmonized_colors = generate_color_harmony(color_rgb, harmony_type)
                 for j, harmony_color in enumerate(harmonized_colors):
                     harmony_block = np.ones((50, 50, 3), np.uint8) * harmony_color[::-1]
