@@ -202,6 +202,18 @@ st.write("Desenvolvido por Marcelo Claro")
 st.sidebar.header("Configurações")
 tolerance = st.sidebar.slider('Tolerância de cor', 0, 100, 40)
 
+# Sidebar
+with st.sidebar.expander("Referências"):
+    st.markdown("""
+    ## Referências
+
+    1. Dyer, R. "Color Psychology: The Emotional Effects of Color". *Psychology Today*, 2019. Disponível em: https://www.psychologytoday.com/us/blog/the-science-color(https://www.psychologytoday.com/us/blog/the-science-color). Acesso em: 10 mar. 2023.
+    2. Gonçalves, M. "Inatualidade e anacronismo na fotografia contemporânea". *Galáxia*, vol. 16, no. 2, pp. 12-28, 2016. doi:10.1590/1982-25542016226628.
+    3. Kosslyn, S. M., & Koenig, O. "Wet Mind: A New Psychology of the Brain". *Psychology Press*, 2017.
+    4. Heller, E. "Psychology of Color: How Colors Influence the Mind". *Color Research and Application*, vol. 43, no. 1, pp. 78-90, 2018. doi:10.1002/col.22100.
+    """)
+
+#________________________________________________________________
 uploaded_file = st.file_uploader("Escolha uma imagem", type=["jpg", "png"])
 if uploaded_file is not None:
     file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
