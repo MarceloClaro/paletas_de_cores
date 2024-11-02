@@ -5,7 +5,7 @@ import cv2
 import streamlit as st
 from PIL import Image
 import io
-import colorsys
+import base64
 
 # Function to convert RGB to CMYK
 def rgb_to_cmyk(r, g, b):
@@ -31,27 +31,6 @@ def calculate_ml(c, m, y, k, total_ml):
     y_ml = (y / total_ink) * total_ml
     k_ml = (k / total_ink) * total_ml
     return c_ml, m_ml, y_ml, k_ml
-
-# Function for color harmony adjustments
-def adjust_hue_saturation_brightness(color, harmony_type):
-    r, g, b = [x / 255.0 for x in color]
-    h, s, v = colorsys.rgb_to_hsv(r, g, b)
-    
-    if harmony_type == "Análoga":
-        h_adj = [h, (h + 0.1) % 1, (h + 0.2) % 1]
-    elif harmony_type == "Complementar":
-        h_adj = [h, (h + 0.5) % 1]
-    elif harmony_type == "Tríade":
-        h_adj = [h, (h + 1 / 3) % 1, (h + 2 / 3) % 1]
-    elif harmony_type == "Tetrádica":
-        h_adj = [h, (h + 0.25) % 1, (h + 0.5) % 1, (h + 0.75) % 1]
-    else:
-        h_adj = [h]
-    
-    harmonized_colors = [
-        tuple(int(x * 255) for x in colorsys.hsv_to_rgb(h, s, v)) for h in h_adj
-    ]
-    return harmonized_colors
 
 class Canvas():
     def __init__(self, src, nb_color, pixel_size=4000):
@@ -128,7 +107,6 @@ if uploaded_file is not None:
     nb_color = st.slider('Escolha o número de cores para pintar', 1, 80, 2)
     total_ml = st.slider('Escolha o total em ml da tinta de cada cor', 1, 1000, 10)
     pixel_size = st.slider('Escolha o tamanho do pixel da pintura', 500, 8000, 4000)
-    harmony_type = st.selectbox("Escolha a harmonia de cores", ["Análoga", "Complementar", "Tríade", "Tetrádica"])
 
     if st.button('Gerar'):
         canvas = Canvas(image, nb_color, pixel_size)
@@ -139,23 +117,18 @@ if uploaded_file is not None:
         st.image(result, caption='Imagem Resultante', use_column_width=True)
         st.image(segmented_image, caption='Imagem Segmentada', use_column_width=True)
 
+        # Display each color with corresponding number in the palette
+        st.subheader("Paleta de Cores e Números")
         for i, color in enumerate(colors):
-            harmonized_colors = adjust_hue_saturation_brightness(color, harmony_type)
-            for j, harmonized_color in enumerate(harmonized_colors):
-                r, g, b = harmonized_color
-                color_block = np.ones((50, 50, 3), np.uint8) * harmonized_color[::-1]
-                st.image(color_block, caption=f'Cor {i+1} - Harmonia {harmony_type} - Variante {j+1}', width=50)
-                
-                # Show RGB values and percentages
-                st.write(f"RGB: {harmonized_color}")
-                
-                # CMYK and ink amounts
-                c, m, y, k = rgb_to_cmyk(r, g, b)
-                c_ml, m_ml, y_ml, k_ml = calculate_ml(c, m, y, k, total_ml)
+            color_rgb = [int(c * 255) for c in color]
+            color_block = np.ones((50, 50, 3), np.uint8) * color_rgb[::-1]  # BGR to RGB
+            
+            st.image(color_block, caption=f'Cor {i + 1} - RGB: {color_rgb}', width=50)
+            r, g, b = color_rgb
+            c, m, y, k = rgb_to_cmyk(r, g, b)
+            c_ml, m_ml, y_ml, k_ml = calculate_ml(c, m, y, k, total_ml)
 
-                st.write(f"""
-                CMYK: C: {c_ml:.2f} ml, M: {m_ml:.2f} ml, Y: {y_ml:.2f} ml, K: {k_ml:.2f} ml
-                """)
+            st.write(f"**Número {i + 1}:** RGB: {color_rgb}, CMYK: C: {c_ml:.2f} ml, M: {m_ml:.2f} ml, Y: {y_ml:.2f} ml, K: {k_ml:.2f} ml")
 
         result_bytes = cv2.imencode('.jpg', result)[1].tobytes()
         st.download_button("Baixar imagem resultante", data=result_bytes, file_name='result.jpg', mime='image/jpeg')
