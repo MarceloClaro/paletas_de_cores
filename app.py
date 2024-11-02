@@ -6,15 +6,7 @@ import streamlit as st
 from PIL import Image
 import io
 import colorsys
-
-# Função para gerar uma escala tonal de uma cor base
-def generate_tonal_scale(base_rgb, n_shades=5):
-    scale = []
-    for i in range(n_shades):
-        factor = 1 - (i / (n_shades - 1))
-        shade = tuple(int(c * factor) for c in base_rgb)
-        scale.append(shade)
-    return scale
+from scipy.spatial import distance
 
 # Função para converter RGB em CMYK
 def rgb_to_cmyk(r, g, b):
@@ -23,11 +15,13 @@ def rgb_to_cmyk(r, g, b):
     c = 1 - r / 255
     m = 1 - g / 255
     y = 1 - b / 255
+
     min_cmy = min(c, m, y)
     c = (c - min_cmy) / (1 - min_cmy)
     m = (m - min_cmy) / (1 - min_cmy)
     y = (y - min_cmy) / (1 - min_cmy)
     k = min_cmy
+
     return c, m, y, k
 
 # Função para calcular quantidade de tinta em ml para cada componente CMYK e Branco
@@ -45,6 +39,7 @@ def calculate_ml(c, m, y, k, total_ml, white_ratio=0.5):
 def generate_color_harmony(color, harmony_type):
     r, g, b = [x / 255.0 for x in color]
     h, s, v = colorsys.rgb_to_hsv(r, g, b)
+    
     if harmony_type == "Análoga":
         h_adj = [h, (h + 0.05) % 1, (h - 0.05) % 1]
     elif harmony_type == "Complementar":
@@ -55,16 +50,36 @@ def generate_color_harmony(color, harmony_type):
         h_adj = [h, (h + 0.25) % 1, (h + 0.5) % 1, (h + 0.75) % 1]
     else:
         h_adj = [h]
-    return [tuple(int(x * 255) for x in colorsys.hsv_to_rgb(h, s, v)) for h in h_adj]
+    
+    harmonized_colors = [
+        tuple(int(x * 255) for x in colorsys.hsv_to_rgb(h, s, v)) for h in h_adj
+    ]
+    return harmonized_colors
 
-# Dicionário com significados dos arquétipos junguianos e valores RGB
+# Dicionário com significados dos arquétipos junguianos e valores RGB de exemplo
 color_archetypes = {
-    (255, 0, 0): 'Arquétipo do Herói - Energia, paixão e ação',
+    (255, 0, 0): 'Arquétipo do Herói - Energia, paixão e ação',            
     (0, 0, 255): 'Arquétipo do Sábio - Tranquilidade, confiança e sabedoria',
-    # Adicione as demais cores aqui
+    (255, 255, 0): 'Arquétipo do Bobo - Otimismo, alegria e criatividade',    
+    (0, 255, 0): 'Arquétipo do Cuidador - Crescimento, harmonia e renovação', 
+    (0, 0, 0): 'Arquétipo da Sombra - Mistério, poder e sofisticação',        
+    (255, 255, 255): 'Arquétipo do Inocente - Pureza, simplicidade e novos começos',
+    (128, 0, 128): 'Arquétipo do Mago - Espiritualidade, mistério e transformação', 
+    (255, 165, 0): 'Arquétipo do Explorador - Entusiasmo, aventura e vitalidade', 
 }
 
-# Função para criar um bloco de cor com borda preta
+# Função para encontrar o arquétipo mais próximo usando tolerância
+def find_closest_archetype(color_rgb, color_archetypes, tolerance):
+    closest_archetype = "Desconhecido"
+    min_dist = tolerance
+    for archetype_rgb, description in color_archetypes.items():
+        dist = distance.euclidean(color_rgb, archetype_rgb)
+        if dist < min_dist:
+            min_dist = dist
+            closest_archetype = description
+    return closest_archetype
+
+# Função para criar uma imagem com borda preta de 1pt ao redor da cor
 def create_color_block_with_border(color_rgb, border_color=(0, 0, 0), border_size=2, size=(50, 50)):
     color_block = np.ones((size[0], size[1], 3), np.uint8) * color_rgb[::-1]
     bordered_block = cv2.copyMakeBorder(color_block, border_size, border_size, border_size, border_size,
@@ -93,6 +108,7 @@ class Canvas():
             mask = cv2.inRange(quantified_image, color, color)
             cnts = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
             cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+
             for contour in cnts:
                 _, _, width_ctr, height_ctr = cv2.boundingRect(contour)
                 if width_ctr > 10 and height_ctr > 10 and cv2.contourArea(contour, True) < -100:
@@ -100,6 +116,7 @@ class Canvas():
                     txt_x, txt_y = contour[0][0]
                     cv2.putText(canvas, '{:d}'.format(ind + 1), (txt_x, txt_y + 15),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1)
+
         return canvas, colors, quantified_image
 
     def resize(self):
@@ -139,6 +156,10 @@ st.title('Gerador de Paleta de Cores para Pintura por Números ')
 st.subheader("Sketching and concept development")
 st.write("Desenvolvido por Marcelo Claro")
 
+# Configurações de tolerância no sidebar
+st.sidebar.header("Configurações")
+tolerance = st.sidebar.slider('Tolerância de cor', 0, 100, 40)
+
 uploaded_file = st.file_uploader("Escolha uma imagem", type=["jpg", "png"])
 if uploaded_file is not None:
     file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
@@ -163,23 +184,15 @@ if uploaded_file is not None:
         st.subheader("Paleta de Cores e Harmonias")
         for i, (color, percentage) in enumerate(zip(colors, canvas.color_percentages)):
             color_rgb = [int(c * 255) for c in color]
-
-            # Associa cor ao arquétipo com base na proximidade
-            archetype_description = "Desconhecido"
-            for archetype_rgb, description in color_archetypes.items():
-                if np.allclose(color_rgb, np.array(archetype_rgb), atol=40):
-                    archetype_description = description
-                    break
+            archetype_description = find_closest_archetype(color_rgb, color_archetypes, tolerance)
             
             with st.expander(f"Cor {i+1} - Arquétipo: {archetype_description.split('-')[0]}"):
                 st.write(f"**Significado Psicológico:** {archetype_description}")
                 st.write(f"**Percentual na Imagem:** {percentage:.2f}%")
                 
-                # Bloco de cor principal com borda preta
                 color_block_with_border = create_color_block_with_border(color_rgb, border_color=(0, 0, 0), border_size=2)
                 st.image(color_block_with_border, width=60)
 
-                # Calcula as dosagens em ml para Ciano, Magenta, Amarelo, Preto e Branco
                 r, g, b = color_rgb
                 c, m, y, k = rgb_to_cmyk(r, g, b)
                 c_ml, m_ml, y_ml, k_ml, white_ml = calculate_ml(c, m, y, k, total_ml, white_ratio=0.5)
@@ -190,10 +203,8 @@ if uploaded_file is not None:
                 st.write(f"Amarelo (Y): {y_ml:.2f} ml")
                 st.write(f"Preto (K): {k_ml:.2f} ml")
 
-                # Separador entre a cor principal e as harmonias
                 st.markdown("---")
 
-                # Exibir harmonias
                 st.write("**Harmonias de Cor**")
                 harmonized_colors = generate_color_harmony(color_rgb, harmony_type)
                 for j, harmony_color in enumerate(harmonized_colors):
