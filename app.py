@@ -53,16 +53,16 @@ def generate_color_harmony(color, harmony_type):
     ]
     return harmonized_colors
 
-# Dicionário com significados dos arquétipos junguianos para cada cor
+# Dicionário com significados dos arquétipos junguianos e valores RGB de exemplo
 color_archetypes = {
-    'Vermelho': 'Arquétipo do Herói - Energia, paixão, e ação',
-    'Azul': 'Arquétipo do Sábio - Tranquilidade, confiança e sabedoria',
-    'Amarelo': 'Arquétipo do Bobo - Otimismo, alegria e criatividade',
-    'Verde': 'Arquétipo do Cuidador - Crescimento, harmonia e renovação',
-    'Preto': 'Arquétipo da Sombra - Mistério, poder e sofisticação',
-    'Branco': 'Arquétipo do Inocente - Pureza, simplicidade e novos começos',
-    'Roxo': 'Arquétipo do Mago - Espiritualidade, mistério e transformação',
-    'Laranja': 'Arquétipo do Explorador - Entusiasmo, aventura e vitalidade'
+    (255, 0, 0): 'Arquétipo do Herói - Energia, paixão e ação',       # Vermelho
+    (0, 0, 255): 'Arquétipo do Sábio - Tranquilidade, confiança e sabedoria', # Azul
+    (255, 255, 0): 'Arquétipo do Bobo - Otimismo, alegria e criatividade',   # Amarelo
+    (0, 255, 0): 'Arquétipo do Cuidador - Crescimento, harmonia e renovação', # Verde
+    (0, 0, 0): 'Arquétipo da Sombra - Mistério, poder e sofisticação',     # Preto
+    (255, 255, 255): 'Arquétipo do Inocente - Pureza, simplicidade e novos começos', # Branco
+    (128, 0, 128): 'Arquétipo do Mago - Espiritualidade, mistério e transformação',  # Roxo
+    (255, 165, 0): 'Arquétipo do Explorador - Entusiasmo, aventura e vitalidade'     # Laranja
 }
 
 # Função para calcular o percentual de cada cor na imagem
@@ -161,16 +161,16 @@ if uploaded_file is not None:
         for i, color in enumerate(colors):
             color_rgb = [int(c * 255) for c in color]
             color_percentage = calculate_color_percentage(segmented_image, color_rgb)
-            
-            # Associa cor ao arquétipo
-            color_name = 'Indefinido'
-            for archetype, description in color_archetypes.items():
-                if np.allclose(color_rgb, np.array([int(x) for x in archetype.split(',')]), atol=40): 
-                    color_name = archetype
+
+            # Associa cor ao arquétipo com base na proximidade
+            archetype_description = "Desconhecido"
+            for archetype_rgb, description in color_archetypes.items():
+                if np.allclose(color_rgb, np.array(archetype_rgb), atol=40):
+                    archetype_description = description
                     break
             
-            with st.expander(f"Cor {i+1} - {color_name}"):
-                st.write(f"**Significado Psicológico:** {color_archetypes.get(color_name, 'Desconhecido')}")
+            with st.expander(f"Cor {i+1} - Arquétipo: {archetype_description.split('-')[0]}"):
+                st.write(f"**Significado Psicológico:** {archetype_description}")
                 st.write(f"**Percentual na Imagem:** {color_percentage:.2f}%")
                 color_block = np.ones((50, 50, 3), np.uint8) * color_rgb[::-1]
                 st.image(color_block, width=50)
