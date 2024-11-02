@@ -7,7 +7,7 @@ from PIL import Image
 import io
 import colorsys
 
-# Function to convert RGB to CMYK
+# Função para converter RGB em CMYK
 def rgb_to_cmyk(r, g, b):
     if (r == 0) and (g == 0) and (b == 0):
         return 0, 0, 0, 1
@@ -23,7 +23,7 @@ def rgb_to_cmyk(r, g, b):
 
     return c, m, y, k
 
-# Function to calculate ink amounts
+# Função para calcular quantidade de tinta
 def calculate_ml(c, m, y, k, total_ml):
     total_ink = c + m + y + k
     c_ml = (c / total_ink) * total_ml
@@ -32,7 +32,7 @@ def calculate_ml(c, m, y, k, total_ml):
     k_ml = (k / total_ink) * total_ml
     return c_ml, m_ml, y_ml, k_ml
 
-# Function to generate color harmonies
+# Função para gerar harmonias de cores
 def generate_color_harmony(color, harmony_type):
     r, g, b = [x / 255.0 for x in color]
     h, s, v = colorsys.rgb_to_hsv(r, g, b)
@@ -52,6 +52,24 @@ def generate_color_harmony(color, harmony_type):
         tuple(int(x * 255) for x in colorsys.hsv_to_rgb(h, s, v)) for h in h_adj
     ]
     return harmonized_colors
+
+# Dicionário com significados dos arquétipos junguianos para cada cor
+color_archetypes = {
+    'Vermelho': 'Arquétipo do Herói - Energia, paixão, e ação',
+    'Azul': 'Arquétipo do Sábio - Tranquilidade, confiança e sabedoria',
+    'Amarelo': 'Arquétipo do Bobo - Otimismo, alegria e criatividade',
+    'Verde': 'Arquétipo do Cuidador - Crescimento, harmonia e renovação',
+    'Preto': 'Arquétipo da Sombra - Mistério, poder e sofisticação',
+    'Branco': 'Arquétipo do Inocente - Pureza, simplicidade e novos começos',
+    'Roxo': 'Arquétipo do Mago - Espiritualidade, mistério e transformação',
+    'Laranja': 'Arquétipo do Explorador - Entusiasmo, aventura e vitalidade'
+}
+
+# Função para calcular o percentual de cada cor na imagem
+def calculate_color_percentage(segmented_image, color):
+    color_area = np.count_nonzero(np.all(segmented_image == color, axis=-1))
+    total_area = segmented_image.shape[0] * segmented_image.shape[1]
+    return (color_area / total_area) * 100
 
 class Canvas():
     def __init__(self, src, nb_color, pixel_size=4000):
@@ -112,7 +130,7 @@ class Canvas():
         out = vfunc(np.arange(width * height))
         return np.resize(out, (width, height, codebook.shape[1]))
 
-# Streamlit interface
+# Interface Streamlit
 st.image("clube.png")
 st.title('Gerador de Paleta de Cores para Pintura por Números ')
 st.subheader("Sketching and concept development")
@@ -139,31 +157,29 @@ if uploaded_file is not None:
         st.image(result, caption='Imagem Resultante', use_column_width=True)
         st.image(segmented_image, caption='Imagem Segmentada', use_column_width=True)
 
-        # Display each color with corresponding number and harmony in the palette
         st.subheader("Paleta de Cores e Harmonias")
         for i, color in enumerate(colors):
             color_rgb = [int(c * 255) for c in color]
-            color_block = np.ones((50, 50, 3), np.uint8) * color_rgb[::-1]  # BGR to RGB
+            color_percentage = calculate_color_percentage(segmented_image, color_rgb)
             
-            # Display color with label and RGB value
-            st.write(f"**Número {i + 1}**")
-            st.image(color_block, caption=f'RGB: {color_rgb}', width=50)
+            # Associa cor ao arquétipo
+            color_name = 'Indefinido'
+            for archetype, description in color_archetypes.items():
+                if np.allclose(color_rgb, np.array([int(x) for x in archetype.split(',')]), atol=40): 
+                    color_name = archetype
+                    break
             
-            # Display CMYK values
-            r, g, b = color_rgb
-            c, m, y, k = rgb_to_cmyk(r, g, b)
-            c_ml, m_ml, y_ml, k_ml = calculate_ml(c, m, y, k, total_ml)
-            st.write(f"CMYK: C: {c_ml:.2f} ml, M: {m_ml:.2f} ml, Y: {y_ml:.2f} ml, K: {k_ml:.2f} ml")
+            with st.expander(f"Cor {i+1} - {color_name}"):
+                st.write(f"**Significado Psicológico:** {color_archetypes.get(color_name, 'Desconhecido')}")
+                st.write(f"**Percentual na Imagem:** {color_percentage:.2f}%")
+                color_block = np.ones((50, 50, 3), np.uint8) * color_rgb[::-1]
+                st.image(color_block, width=50)
 
-            # Accordion for color harmonies
-            with st.expander(f"Mostrar Harmonia ({harmony_type})"):
+                # Exibir harmonias
                 harmonized_colors = generate_color_harmony(color_rgb, harmony_type)
-                for j, harmonized_color in enumerate(harmonized_colors):
-                    harmony_block = np.ones((50, 50, 3), np.uint8) * harmonized_color[::-1]
-                    st.image(harmony_block, caption=f'Harmonia {j + 1} - RGB: {harmonized_color}', width=50)
-            
-            # Separator for clarity between colors
-            st.markdown("---")
+                for j, harmony_color in enumerate(harmonized_colors):
+                    harmony_block = np.ones((50, 50, 3), np.uint8) * harmony_color[::-1]
+                    st.image(harmony_block, caption=f'Harmonia {j + 1} - RGB: {harmony_color}', width=50)
 
         result_bytes = cv2.imencode('.jpg', result)[1].tobytes()
         st.download_button("Baixar imagem resultante", data=result_bytes, file_name='result.jpg', mime='image/jpeg')
