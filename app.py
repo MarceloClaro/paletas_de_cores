@@ -65,6 +65,13 @@ color_archetypes = {
     (255, 165, 0): 'Arquétipo do Explorador - Entusiasmo, aventura e vitalidade'     # Laranja
 }
 
+# Função para criar uma imagem com borda ao redor da cor
+def create_color_block_with_border(color_rgb, border_color=(255, 255, 255), border_size=5, size=(50, 50)):
+    color_block = np.ones((size[0], size[1], 3), np.uint8) * color_rgb[::-1]  # Inverter RGB para BGR
+    bordered_block = cv2.copyMakeBorder(color_block, border_size, border_size, border_size, border_size,
+                                        cv2.BORDER_CONSTANT, value=border_color)
+    return bordered_block
+
 # Classe Canvas para manipulação da imagem e quantificação de cores
 class Canvas():
     def __init__(self, src, nb_color, pixel_size=4000):
@@ -170,8 +177,10 @@ if uploaded_file is not None:
             with st.expander(f"Cor {i+1} - Arquétipo: {archetype_description.split('-')[0]}"):
                 st.write(f"**Significado Psicológico:** {archetype_description}")
                 st.write(f"**Percentual na Imagem:** {percentage:.2f}%")
-                color_block = np.ones((50, 50, 3), np.uint8) * color_rgb[::-1]
-                st.image(color_block, width=50)
+                
+                # Bloco de cor principal com borda
+                color_block_with_border = create_color_block_with_border(color_rgb)
+                st.image(color_block_with_border, width=60)
 
                 # Separador entre a cor principal e as harmonias
                 st.markdown("---")
@@ -180,8 +189,8 @@ if uploaded_file is not None:
                 st.write("**Harmonias de Cor**")
                 harmonized_colors = generate_color_harmony(color_rgb, harmony_type)
                 for j, harmony_color in enumerate(harmonized_colors):
-                    harmony_block = np.ones((50, 50, 3), np.uint8) * harmony_color[::-1]
-                    st.image(harmony_block, caption=f'Harmonia {j + 1} - RGB: {harmony_color}', width=50)
+                    harmony_block_with_border = create_color_block_with_border(harmony_color)
+                    st.image(harmony_block_with_border, caption=f'Harmonia {j + 1} - RGB: {harmony_color}', width=60)
 
         result_bytes = cv2.imencode('.jpg', result)[1].tobytes()
         st.download_button("Baixar imagem resultante", data=result_bytes, file_name='result.jpg', mime='image/jpeg')
