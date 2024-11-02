@@ -5,10 +5,9 @@ import cv2
 import streamlit as st
 from PIL import Image
 import io
-import base64
 import colorsys
 
-# Função para conversão de RGB para CMYK
+# Function to convert RGB to CMYK
 def rgb_to_cmyk(r, g, b):
     if (r == 0) and (g == 0) and (b == 0):
         return 0, 0, 0, 1
@@ -24,7 +23,7 @@ def rgb_to_cmyk(r, g, b):
 
     return c, m, y, k
 
-# Função para calcular quantidade de tinta
+# Function to calculate ink amounts
 def calculate_ml(c, m, y, k, total_ml):
     total_ink = c + m + y + k
     c_ml = (c / total_ink) * total_ml
@@ -33,7 +32,7 @@ def calculate_ml(c, m, y, k, total_ml):
     k_ml = (k / total_ink) * total_ml
     return c_ml, m_ml, y_ml, k_ml
 
-# Função para gerar harmonias de cores
+# Function for color harmony adjustments
 def adjust_hue_saturation_brightness(color, harmony_type):
     r, g, b = [x / 255.0 for x in color]
     h, s, v = colorsys.rgb_to_hsv(r, g, b)
@@ -113,6 +112,7 @@ class Canvas():
         out = vfunc(np.arange(width * height))
         return np.resize(out, (width, height, codebook.shape[1]))
 
+# Streamlit interface
 st.image("clube.png")
 st.title('Gerador de Paleta de Cores para Pintura por Números ')
 st.subheader("Sketching and concept development")
@@ -142,16 +142,19 @@ if uploaded_file is not None:
         for i, color in enumerate(colors):
             harmonized_colors = adjust_hue_saturation_brightness(color, harmony_type)
             for j, harmonized_color in enumerate(harmonized_colors):
+                r, g, b = harmonized_color
                 color_block = np.ones((50, 50, 3), np.uint8) * harmonized_color[::-1]
                 st.image(color_block, caption=f'Cor {i+1} - Harmonia {harmony_type} - Variante {j+1}', width=50)
-
-                r, g, b = harmonized_color
+                
+                # Show RGB values and percentages
+                st.write(f"RGB: {harmonized_color}")
+                
+                # CMYK and ink amounts
                 c, m, y, k = rgb_to_cmyk(r, g, b)
                 c_ml, m_ml, y_ml, k_ml = calculate_ml(c, m, y, k, total_ml)
 
                 st.write(f"""
-                PALETAS DE COR PARA: {total_ml:.2f} ml.
-                Ciano: {c_ml:.2f} ml, Magenta: {m_ml:.2f} ml, Amarelo: {y_ml:.2f} ml, Preto: {k_ml:.2f} ml
+                CMYK: C: {c_ml:.2f} ml, M: {m_ml:.2f} ml, Y: {y_ml:.2f} ml, K: {k_ml:.2f} ml
                 """)
 
         result_bytes = cv2.imencode('.jpg', result)[1].tobytes()
