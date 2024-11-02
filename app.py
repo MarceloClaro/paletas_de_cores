@@ -23,7 +23,7 @@ def rgb_to_cmyk(r, g, b):
 
     return c, m, y, k
 
-# Função para calcular quantidade de tinta
+# Função para calcular quantidade de tinta em ml para cada componente CMYK
 def calculate_ml(c, m, y, k, total_ml):
     total_ink = c + m + y + k
     c_ml = (c / total_ink) * total_ml
@@ -181,6 +181,16 @@ if uploaded_file is not None:
                 # Bloco de cor principal com borda preta
                 color_block_with_border = create_color_block_with_border(color_rgb, border_color=(0, 0, 0), border_size=2)
                 st.image(color_block_with_border, width=60)
+
+                # Calcula as dosagens em ml para Ciano, Magenta, Amarelo e Preto
+                r, g, b = color_rgb
+                c, m, y, k = rgb_to_cmyk(r, g, b)
+                c_ml, m_ml, y_ml, k_ml = calculate_ml(c, m, y, k, total_ml)
+                st.write(f"**Dosagem para obter a cor principal em {total_ml} ml:**")
+                st.write(f"Ciano (C): {c_ml:.2f} ml")
+                st.write(f"Magenta (M): {m_ml:.2f} ml")
+                st.write(f"Amarelo (Y): {y_ml:.2f} ml")
+                st.write(f"Preto (K): {k_ml:.2f} ml")
 
                 # Separador entre a cor principal e as harmonias
                 st.markdown("---")
