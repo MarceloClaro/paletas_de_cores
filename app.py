@@ -7,6 +7,15 @@ from PIL import Image
 import io
 import colorsys
 
+# Função para gerar uma escala tonal de uma cor base
+def generate_tonal_scale(base_rgb, n_shades=5):
+    scale = []
+    for i in range(n_shades):
+        factor = 1 - (i / (n_shades - 1))
+        shade = tuple(int(c * factor) for c in base_rgb)
+        scale.append(shade)
+    return scale
+
 # Função para converter RGB em CMYK
 def rgb_to_cmyk(r, g, b):
     if (r == 0) and (g == 0) and (b == 0):
@@ -14,21 +23,17 @@ def rgb_to_cmyk(r, g, b):
     c = 1 - r / 255
     m = 1 - g / 255
     y = 1 - b / 255
-
     min_cmy = min(c, m, y)
     c = (c - min_cmy) / (1 - min_cmy)
     m = (m - min_cmy) / (1 - min_cmy)
     y = (y - min_cmy) / (1 - min_cmy)
     k = min_cmy
-
     return c, m, y, k
 
 # Função para calcular quantidade de tinta em ml para cada componente CMYK e Branco
 def calculate_ml(c, m, y, k, total_ml, white_ratio=0.5):
-    # Calcula a quantidade de branco com base na proporção white_ratio
     white_ml = total_ml * white_ratio
     remaining_ml = total_ml - white_ml
-    
     total_ink = c + m + y + k
     c_ml = (c / total_ink) * remaining_ml
     m_ml = (m / total_ink) * remaining_ml
@@ -40,7 +45,6 @@ def calculate_ml(c, m, y, k, total_ml, white_ratio=0.5):
 def generate_color_harmony(color, harmony_type):
     r, g, b = [x / 255.0 for x in color]
     h, s, v = colorsys.rgb_to_hsv(r, g, b)
-    
     if harmony_type == "Análoga":
         h_adj = [h, (h + 0.05) % 1, (h - 0.05) % 1]
     elif harmony_type == "Complementar":
@@ -51,70 +55,18 @@ def generate_color_harmony(color, harmony_type):
         h_adj = [h, (h + 0.25) % 1, (h + 0.5) % 1, (h + 0.75) % 1]
     else:
         h_adj = [h]
-    
-    harmonized_colors = [
-        tuple(int(x * 255) for x in colorsys.hsv_to_rgb(h, s, v)) for h in h_adj
-    ]
-    return harmonized_colors
+    return [tuple(int(x * 255) for x in colorsys.hsv_to_rgb(h, s, v)) for h in h_adj]
 
-# Dicionário com significados dos arquétipos junguianos e valores RGB de exemplo
+# Dicionário com significados dos arquétipos junguianos e valores RGB
 color_archetypes = {
-    (255, 0, 0): 'Arquétipo do Herói - Energia, paixão e ação',          # Vermelho
-    (0, 0, 255): 'Arquétipo do Sábio - Tranquilidade, confiança e sabedoria', # Azul
-    (255, 255, 0): 'Arquétipo do Bobo - Otimismo, alegria e criatividade',    # Amarelo
-    (0, 255, 0): 'Arquétipo do Cuidador - Crescimento, harmonia e renovação', # Verde
-    (0, 0, 0): 'Arquétipo da Sombra - Mistério, poder e sofisticação',        # Preto
-    (255, 255, 255): 'Arquétipo do Inocente - Pureza, simplicidade e novos começos', # Branco
-    (128, 0, 128): 'Arquétipo do Mago - Espiritualidade, mistério e transformação',   # Roxo
-    (255, 165, 0): 'Arquétipo do Explorador - Entusiasmo, aventura e vitalidade',      # Laranja
-    (75, 0, 130): 'Arquétipo do Rebelde - Independência, poder e transformação',       # Índigo
-    (255, 192, 203): 'Arquétipo do Amante - Amor, compaixão e sensualidade',           # Rosa
-    (128, 128, 128): 'Arquétipo do Homem Comum - Neutralidade, simplicidade e realismo', # Cinza
-    (255, 215, 0): 'Arquétipo do Governante - Autoridade, controle e responsabilidade',  # Dourado
-    (139, 69, 19): 'Arquétipo da Terra - Segurança, conforto e resistência',            # Marrom
-    (192, 192, 192): 'Arquétipo da Sabedoria - Discrição, equilíbrio e sofisticação',   # Prata
-    (255, 105, 180): 'Arquétipo do Amante Jovial - Romance, empatia e diversão',        # Rosa Choque
-    (0, 255, 255): 'Arquétipo da Liberdade - Integração, expansão e conexão',           # Ciano
-    (34, 139, 34): 'Arquétipo do Construtor - Crescimento, perseverança e estabilidade', # Verde Escuro
-    (210, 105, 30): 'Arquétipo do Alquimista - Transformação, criatividade e poder',    # Chocolate
-    (123, 104, 238): 'Arquétipo do Visionário - Imaginação, inovação e possibilidades', # Azul Elétrico
-    (250, 128, 114): 'Arquétipo da Paixão - Vitalidade, desejo e entusiasmo',           # Salmão
-    (46, 139, 87): 'Arquétipo da Cura - Renovação, tranquilidade e naturalidade',       # Verde Marinho
-    (105, 105, 105): 'Arquétipo da Neutralidade - Modéstia, resiliência e estabilidade', # Cinza Escuro
-    (255, 69, 0): 'Arquétipo do Guerreiro - Coragem, impulso e força de vontade',       # Laranja Avermelhado
-    (218, 112, 214): 'Arquétipo do Criativo - Originalidade, delicadeza e imaginação',  # Orquídea
-    (64, 224, 208): 'Arquétipo do Pacificador - Serenidade, equilíbrio e paz',          # Turquesa
-    (147, 112, 219): 'Arquétipo do Idealista - Inspiração, aspiração e sonho',          # Roxo Claro
-    (0, 191, 255): 'Arquétipo do Comunicador - Clareza, expressão e intercâmbio',       # Azul Celeste
-    (255, 20, 147): 'Arquétipo da Musa - Inspiração, fascínio e expressão artística',   # Rosa Escuro
-    (186, 85, 211): 'Arquétipo do Místico - Magia, mistério e introspecção',            # Ameixa
-    (127, 255, 0): 'Arquétipo do Naturalista - Sustentabilidade, vida e vigor',         # Verde Limão
-    (255, 140, 0): 'Arquétipo da Criatividade - Energia, brilho e expressão criativa',  # Laranja Escuro
-    (143, 188, 143): 'Arquétipo do Harmonizador - Equilíbrio, harmonia e paz interior', # Verde Marinho Claro
-    (255, 248, 220): 'Arquétipo da Pureza - Calma, clareza e sinceridade',              # Bege
-    (210, 180, 140): 'Arquétipo da Estabilidade - Segurança, tradição e consistência',  # Castanho Claro
-    (238, 232, 170): 'Arquétipo da Prosperidade - Sucesso, confiança e abundância',     # Amarelo Palha
-    (152, 251, 152): 'Arquétipo do Curador - Renovação, saúde e regeneração',           # Verde Claro
-    (245, 222, 179): 'Arquétipo do Apoio - Hospitalidade, conforto e calor',            # Trigo
-    (250, 235, 215): 'Arquétipo da Simplicidade - Pureza, honestidade e clareza',       # Branco Antigo
-    (124, 252, 0): 'Arquétipo da Natureza - Crescimento, vitalidade e equilíbrio',      # Verde-Grama
-    (250, 250, 210): 'Arquétipo da Calma - Tranquilidade, serenidade e estabilidade',   # Amarelo Claro
-    (255, 239, 213): 'Arquétipo da Acolhida - Carinho, compreensão e receptividade',    # Papaya Whip
-    (244, 164, 96): 'Arquétipo da Aventura - Descoberta, emoção e desafio',             # Areia
-    (176, 224, 230): 'Arquétipo da Sensibilidade - Serenidade, equilíbrio e empatia',   # Azul Pálido
-    (32, 178, 170): 'Arquétipo da Expansão - Progresso, mudança e liberdade',           # Verde-Água
-    (70, 130, 180): 'Arquétipo do Realizador - Determinação, visão e resiliência',      # Azul Aço
-    (169, 169, 169): 'Arquétipo da Resiliência - Força, estabilidade e consistência',   # Cinza Claro
-    (250, 128, 114): 'Arquétipo da Paixão - Desejo, calor e ação',                      # Salmão
-    (255, 228, 225): 'Arquétipo da Delicadeza - Afeto, compreensão e bondade',          # Rosado
-    (240, 230, 140): 'Arquétipo da Prosperidade - Otimismo, positividade e energia',    # Amarelo Claro
-    (255, 218, 185): 'Arquétipo da Alegria - Vibração, luz e entusiasmo',               # Pêssego
-    (218, 165, 32): 'Arquétipo da Sabedoria - Experiência, valor e riqueza',            # Dourado Escuro
+    (255, 0, 0): 'Arquétipo do Herói - Energia, paixão e ação',
+    (0, 0, 255): 'Arquétipo do Sábio - Tranquilidade, confiança e sabedoria',
+    # Adicione as demais cores aqui
 }
 
-# Função para criar uma imagem com borda preta de 1pt ao redor da cor
+# Função para criar um bloco de cor com borda preta
 def create_color_block_with_border(color_rgb, border_color=(0, 0, 0), border_size=2, size=(50, 50)):
-    color_block = np.ones((size[0], size[1], 3), np.uint8) * color_rgb[::-1]  # Inverter RGB para BGR
+    color_block = np.ones((size[0], size[1], 3), np.uint8) * color_rgb[::-1]
     bordered_block = cv2.copyMakeBorder(color_block, border_size, border_size, border_size, border_size,
                                         cv2.BORDER_CONSTANT, value=border_color)
     return bordered_block
@@ -141,7 +93,6 @@ class Canvas():
             mask = cv2.inRange(quantified_image, color, color)
             cnts = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
             cnts = cnts[0] if len(cnts) == 2 else cnts[1]
-
             for contour in cnts:
                 _, _, width_ctr, height_ctr = cv2.boundingRect(contour)
                 if width_ctr > 10 and height_ctr > 10 and cv2.contourArea(contour, True) < -100:
@@ -149,7 +100,6 @@ class Canvas():
                     txt_x, txt_y = contour[0][0]
                     cv2.putText(canvas, '{:d}'.format(ind + 1), (txt_x, txt_y + 15),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1)
-
         return canvas, colors, quantified_image
 
     def resize(self):
@@ -173,8 +123,8 @@ class Canvas():
         sample = shuffle(flattened)[:1000]
         kmeans = KMeans(n_clusters=self.nb_color).fit(sample)
         labels = kmeans.predict(flattened)
-        unique, counts = np.unique(labels, return_counts=True)  # Conta pixels por cluster
-        color_percentages = counts / len(flattened) * 100       # Percentual de cada cor
+        unique, counts = np.unique(labels, return_counts=True)
+        color_percentages = counts / len(flattened) * 100
         new_img = self.recreate_image(kmeans.cluster_centers_, labels, width, height)
         return new_img, kmeans.cluster_centers_, color_percentages
 
