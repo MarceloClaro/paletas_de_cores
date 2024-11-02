@@ -144,20 +144,23 @@ if uploaded_file is not None:
         for i, color in enumerate(colors):
             color_rgb = [int(c * 255) for c in color]
             color_block = np.ones((50, 50, 3), np.uint8) * color_rgb[::-1]  # BGR to RGB
-            st.image(color_block, caption=f'Cor {i + 1} - RGB: {color_rgb}', width=50)
-
-            # CMYK and ink amount
+            
+            # Display color with label and RGB value
+            st.write(f"**Número {i + 1}**")
+            st.image(color_block, caption=f'RGB: {color_rgb}', width=50)
+            
+            # Display CMYK values
             r, g, b = color_rgb
             c, m, y, k = rgb_to_cmyk(r, g, b)
             c_ml, m_ml, y_ml, k_ml = calculate_ml(c, m, y, k, total_ml)
+            st.write(f"CMYK: C: {c_ml:.2f} ml, M: {m_ml:.2f} ml, Y: {y_ml:.2f} ml, K: {k_ml:.2f} ml")
 
-            st.write(f"**Número {i + 1}:** RGB: {color_rgb}, CMYK: C: {c_ml:.2f} ml, M: {m_ml:.2f} ml, Y: {y_ml:.2f} ml, K: {k_ml:.2f} ml")
-            
-            # Generate and display color harmonies
-            harmonized_colors = generate_color_harmony(color_rgb, harmony_type)
-            for j, harmonized_color in enumerate(harmonized_colors):
-                harmony_block = np.ones((50, 50, 3), np.uint8) * harmonized_color[::-1]
-                st.image(harmony_block, caption=f'Harmonia {j + 1} - RGB: {harmonized_color}', width=50)
+            # Accordion for color harmonies
+            with st.expander(f"Mostrar Harmonia ({harmony_type})"):
+                harmonized_colors = generate_color_harmony(color_rgb, harmony_type)
+                for j, harmonized_color in enumerate(harmonized_colors):
+                    harmony_block = np.ones((50, 50, 3), np.uint8) * harmonized_color[::-1]
+                    st.image(harmony_block, caption=f'Harmonia {j + 1} - RGB: {harmonized_color}', width=50)
             
             # Separator for clarity between colors
             st.markdown("---")
