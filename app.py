@@ -158,6 +158,9 @@ if uploaded_file is not None:
             for j, harmonized_color in enumerate(harmonized_colors):
                 harmony_block = np.ones((50, 50, 3), np.uint8) * harmonized_color[::-1]
                 st.image(harmony_block, caption=f'Harmonia {j + 1} - RGB: {harmonized_color}', width=50)
+            
+            # Separator for clarity between colors
+            st.markdown("---")
 
         result_bytes = cv2.imencode('.jpg', result)[1].tobytes()
         st.download_button("Baixar imagem resultante", data=result_bytes, file_name='result.jpg', mime='image/jpeg')
