@@ -23,14 +23,18 @@ def rgb_to_cmyk(r, g, b):
 
     return c, m, y, k
 
-# Função para calcular quantidade de tinta em ml para cada componente CMYK
-def calculate_ml(c, m, y, k, total_ml):
+# Função para calcular quantidade de tinta em ml para cada componente CMYK e Branco
+def calculate_ml(c, m, y, k, total_ml, white_ratio=0.5):
+    # Calcula a quantidade de branco com base na proporção white_ratio
+    white_ml = total_ml * white_ratio
+    remaining_ml = total_ml - white_ml
+    
     total_ink = c + m + y + k
-    c_ml = (c / total_ink) * total_ml
-    m_ml = (m / total_ink) * total_ml
-    y_ml = (y / total_ink) * total_ml
-    k_ml = (k / total_ink) * total_ml
-    return c_ml, m_ml, y_ml, k_ml
+    c_ml = (c / total_ink) * remaining_ml
+    m_ml = (m / total_ink) * remaining_ml
+    y_ml = (y / total_ink) * remaining_ml
+    k_ml = (k / total_ink) * remaining_ml
+    return c_ml, m_ml, y_ml, k_ml, white_ml
 
 # Função para gerar harmonias de cores
 def generate_color_harmony(color, harmony_type):
@@ -182,11 +186,12 @@ if uploaded_file is not None:
                 color_block_with_border = create_color_block_with_border(color_rgb, border_color=(0, 0, 0), border_size=2)
                 st.image(color_block_with_border, width=60)
 
-                # Calcula as dosagens em ml para Ciano, Magenta, Amarelo e Preto
+                # Calcula as dosagens em ml para Ciano, Magenta, Amarelo, Preto e Branco
                 r, g, b = color_rgb
                 c, m, y, k = rgb_to_cmyk(r, g, b)
-                c_ml, m_ml, y_ml, k_ml = calculate_ml(c, m, y, k, total_ml)
+                c_ml, m_ml, y_ml, k_ml, white_ml = calculate_ml(c, m, y, k, total_ml, white_ratio=0.5)
                 st.write(f"**Dosagem para obter a cor principal em {total_ml} ml:**")
+                st.write(f"Branco (Acrílico): {white_ml:.2f} ml")
                 st.write(f"Ciano (C): {c_ml:.2f} ml")
                 st.write(f"Magenta (M): {m_ml:.2f} ml")
                 st.write(f"Amarelo (Y): {y_ml:.2f} ml")
