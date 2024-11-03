@@ -92,7 +92,9 @@ if uploaded_file:
     # Inicializa a imagem empilhada com zeros e converte cada camada para uint8
     stacked_image = np.zeros_like(mdf_layers[0], dtype=np.uint8)
     for idx, layer in enumerate(mdf_layers):
-        stacked_image = cv2.add(stacked_image, (layer * 255).astype(np.uint8))
+        stacked_layer = (layer * 255).astype(np.uint8)
+        stacked_layer = cv2.resize(stacked_layer, (stacked_image.shape[1], stacked_image.shape[0]), interpolation=cv2.INTER_LINEAR)
+        stacked_image = cv2.add(stacked_image, stacked_layer)
         
     st.subheader("Mapa Topográfico Empilhado (Visualização)")
     st.image(stacked_image, caption="Mapa Topográfico em Camadas", use_column_width=True)
