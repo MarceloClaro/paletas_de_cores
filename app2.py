@@ -6,7 +6,7 @@ from sklearn.cluster import KMeans
 
 # Função para segmentar imagem em camadas de cor
 def segment_image_into_layers(image, nb_color=5):
-    # Redimensiona a imagem para 2400 x 1600 pixels para simular 2,4 m x 1,6 m
+    # Redimensiona a imagem para 2400 x 1600 pixels
     resized_image = cv2.resize(image, (2400, 1600), interpolation=cv2.INTER_LINEAR)
     resized_image = np.float32(resized_image) / 255.0  # Normaliza os valores entre 0 e 1
     
@@ -70,8 +70,8 @@ if uploaded_file:
         layer_display = (layer * 255).astype(np.uint8)
         st.image(layer_display, caption=f"Camada {idx + 1}", use_column_width=True)
     
-    # Mostra imagem sobreposta (camadas empilhadas)
-    stacked_image = np.zeros_like(image)
+    # Inicializa a imagem empilhada com zeros e converte cada camada para uint8
+    stacked_image = np.zeros_like(mdf_layers[0], dtype=np.uint8)
     for idx, layer in enumerate(mdf_layers):
         stacked_image = cv2.add(stacked_image, (layer * 255).astype(np.uint8))
         
