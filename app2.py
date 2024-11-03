@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 import streamlit as st
-from PIL import Image
+from PIL import Image  # Certifique-se de que a biblioteca PIL está importada
 from sklearn.cluster import KMeans
 from sklearn.utils import shuffle
 
@@ -9,7 +9,7 @@ from sklearn.utils import shuffle
 def segment_image_into_layers(image, nb_color=5):
     # Redimensiona a imagem para análise mais precisa
     large_image = cv2.resize(image, (300, 300), interpolation=cv2.INTER_LINEAR)
-    large_image = np.float32(large_image) / 255.0
+    large_image = np.float32(large_image) / 255.0  # Normaliza os valores entre 0 e 1
     
     # Clusterização das cores
     h, w, ch = large_image.shape
@@ -63,7 +63,9 @@ if uploaded_file:
     mdf_layers = prepare_layers_for_mdf(color_layers, color_centers)
     
     for idx, layer in enumerate(mdf_layers):
-        st.image(layer, caption=f"Camada {idx + 1}", use_column_width=True)
+        # Ajusta o valor da camada para ficar entre 0 e 255 antes de exibir
+        layer_display = (layer * 255).astype(np.uint8)
+        st.image(layer_display, caption=f"Camada {idx + 1}", use_column_width=True)
     
     # Mostra imagem sobreposta (camadas empilhadas)
     stacked_image = np.zeros_like(image)
