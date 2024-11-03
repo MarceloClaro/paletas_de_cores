@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 import streamlit as st
-from PIL import Image  # Certifique-se de que a biblioteca PIL está importada
+from PIL import Image
 from sklearn.cluster import KMeans
 from sklearn.utils import shuffle
 
@@ -23,26 +23,33 @@ def segment_image_into_layers(image, nb_color=5):
         mask = (labels.reshape(h, w) == i).astype(np.uint8) * 255
         color_layer = np.zeros_like(large_image)
         color_layer[labels.reshape(h, w) == i] = kmeans.cluster_centers_[i]
+        
+        # Redimensiona com interpolação suave para a imagem original
         color_layer = cv2.resize(color_layer, (image.shape[1], image.shape[0]), interpolation=cv2.INTER_LINEAR)
         color_layers.append(color_layer)
     
     return color_layers, kmeans.cluster_centers_
 
-# Função para preparar cada camada para o corte em MDF (camadas sólidas)
+# Função para preparar cada camada para o corte em MDF (camadas sólidas e suavizadas)
 def prepare_layers_for_mdf(color_layers, color_centers):
     mdf_layers = []
     for idx, layer in enumerate(color_layers):
         gray = cv2.cvtColor((layer * 255).astype(np.uint8), cv2.COLOR_BGR2GRAY)
         
-        # Processa para obter contornos sólidos
-        contours, _ = cv2.findContours(gray, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        # Suaviza as bordas dos contornos
+        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+        _, thresholded = cv2.threshold(blurred, 1, 255, cv2.THRESH_BINARY)
+        
+        # Obtem contornos sólidos e preenchidos
+        contours, _ = cv2.findContours(thresholded, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         solid_layer = np.zeros_like(layer)
         
         # Preenche as áreas internas com a cor dominante
         cv2.drawContours(solid_layer, contours, -1, tuple(map(int, color_centers[idx] * 255)), thickness=cv2.FILLED)
         
-        # Adiciona um contorno para o efeito de "curva de nível"
+        # Adiciona um contorno leve e desfocado para efeito "curva de nível"
         cv2.drawContours(solid_layer, contours, -1, (0, 0, 0), thickness=1)
+        solid_layer = cv2.GaussianBlur(solid_layer, (3, 3), 0)
         
         mdf_layers.append(solid_layer)
     return mdf_layers
