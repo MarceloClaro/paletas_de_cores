@@ -20,26 +20,26 @@ class Canvas():
         quantified_image, colors, color_percentages = self.quantification(clean_img)
         self.color_percentages = color_percentages
         canvas = np.ones(quantified_image.shape[:2], dtype="uint8") * 255
-        individual_layers = []  # Lista para armazenar imagens das camadas coloridas
+        individual_layers = []  # Lista para armazenar imagens das camadas coloridas numeradas
 
+        # Itera sobre as cores encontradas e cria camadas numeradas
         for ind, color in enumerate(colors):
             self.colormap.append([int(c * 255) for c in color])
             mask = cv2.inRange(quantified_image, color, color)
             cnts = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
             cnts = cnts[0] if len(cnts) == 2 else cnts[1]
 
-            # Cria uma camada individual colorida com a cor dominante para a sobreposição
+            # Cria uma camada individual colorida com a cor dominante e numerada
             layer_colored = np.zeros(quantified_image.shape, dtype="uint8")
             color_bgr = tuple(int(c * 255) for c in color[::-1])  # Convertendo para BGR
             for contour in cnts:
                 _, _, width_ctr, height_ctr = cv2.boundingRect(contour)
                 if width_ctr > 10 and height_ctr > 10 and cv2.contourArea(contour, True) < -100:
-                    cv2.drawContours(canvas, [contour], -1, (0, 0, 0), 1)
                     cv2.drawContours(layer_colored, [contour], -1, color_bgr, -1)  # Preenche a camada com a cor dominante
                     txt_x, txt_y = contour[0][0]
-                    cv2.putText(canvas, '{:d}'.format(ind + 1), (txt_x, txt_y + 15),
+                    cv2.putText(layer_colored, f'{ind + 1}', (txt_x, txt_y + 15),  # Numerando a camada
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1)
-            individual_layers.append(layer_colored)  # Armazena a camada colorida
+            individual_layers.append(layer_colored)  # Armazena a camada numerada
 
         return canvas, colors, quantified_image, individual_layers
 
@@ -94,18 +94,16 @@ if uploaded_file is not None:
         st.image(result, caption='Imagem Resultante', use_column_width=True)
         st.image(segmented_image, caption='Imagem Segmentada', use_column_width=True)
 
-        # Exibir cada camada individual colorida e permitir download
-        st.subheader("Camadas Individuais de Cor (Mapa Topográfico Colorido)")
-        
-        # Criar uma imagem de sobreposição com todas as camadas
-        overlay_image = np.zeros_like(image)  # Iniciar a imagem de sobreposição com preto
+        # Exibir cada camada numerada e colorida para sobreposição
+        st.subheader("Camadas Individuais Numeradas (Mapa Topográfico Colorido)")
         for i, layer in enumerate(individual_layers):
-            overlay_image = cv2.addWeighted(overlay_image, 1, layer, 1, 0)  # Sobrepor cada camada colorida
-            st.image(layer, caption=f'Camada {i + 1}', use_column_width=True)  # Exibir a camada individualmente
+            st.image(layer, caption=f'Camada {i + 1} - Cor Dominante', use_column_width=True)
             layer_bytes = cv2.imencode('.jpg', layer)[1].tobytes()
             st.download_button(f"Baixar Camada {i + 1}", data=layer_bytes, file_name=f'layer_{i + 1}.jpg', mime='image/jpeg')
 
-        # Exibir e permitir o download da imagem final sobreposta
-        st.image(overlay_image, caption="Imagem Final Sobreposta", use_column_width=True)
-        overlay_bytes = cv2.imencode('.jpg', overlay_image)[1].tobytes()
-        st.download_button("Baixar Imagem Final Sobreposta", data=overlay_bytes, file_name="overlay_image.jpg", mime="image/jpeg")
+        # Download da imagem segmentada e da imagem resultante
+        result_bytes = cv2.imencode('.jpg', result)[1].tobytes()
+        st.download_button("Baixar imagem resultante", data=result_bytes, file_name='result.jpg', mime='image/jpeg')
+        
+        segmented_image_bytes = cv2.imencode('.jpg', segmented_image)[1].tobytes()
+        st.download_button("Baixar imagem segmentada", data=segmented_image_bytes, file_name='segmented.jpg', mime='image/jpeg')
