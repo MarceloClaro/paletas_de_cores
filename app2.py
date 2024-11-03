@@ -4,15 +4,31 @@ import streamlit as st
 from PIL import Image
 from sklearn.cluster import KMeans
 
+# Função para redimensionar imagem conforme escolha do usuário
+def resize_image(image, shape_option):
+    original_h, original_w = image.shape[:2]
+    target_area = 2.4  # Área em metros quadrados
+    scaling_factor = (target_area * 1e6) / (original_h * original_w)  # Fator de escala para garantir 2,40 m²
+
+    if shape_option == "Retangular (2400x1600)":
+        width, height = 2400, 1600
+    elif shape_option == "Quadrado (1500x1500)":
+        width = height = 1500
+    else:  # Proporção Original
+        aspect_ratio = original_w / original_h
+        height = int(np.sqrt(scaling_factor / aspect_ratio))
+        width = int(height * aspect_ratio)
+    
+    resized_image = cv2.resize(image, (width, height), interpolation=cv2.INTER_LINEAR)
+    return resized_image
+
 # Função para segmentar imagem em camadas de cor
 def segment_image_into_layers(image, nb_color=5):
-    # Redimensiona a imagem para 2400 x 1600 pixels
-    resized_image = cv2.resize(image, (2400, 1600), interpolation=cv2.INTER_LINEAR)
-    resized_image = np.float32(resized_image) / 255.0  # Normaliza os valores entre 0 e 1
+    data = np.float32(image) / 255.0  # Normaliza os valores entre 0 e 1
+    h, w, ch = data.shape
+    data = data.reshape((-1, 3))
     
     # Clusterização das cores
-    h, w, ch = resized_image.shape
-    data = resized_image.reshape((-1, 3))
     kmeans = KMeans(n_clusters=nb_color, random_state=42).fit(data)
     labels = kmeans.predict(data)
     
@@ -20,7 +36,7 @@ def segment_image_into_layers(image, nb_color=5):
     color_layers = []
     for i in range(nb_color):
         mask = (labels.reshape(h, w) == i).astype(np.uint8) * 255
-        color_layer = np.zeros_like(resized_image)
+        color_layer = np.zeros_like(image, dtype=np.float32)
         color_layer[labels.reshape(h, w) == i] = kmeans.cluster_centers_[i]
         color_layers.append(color_layer)
     
@@ -58,8 +74,11 @@ if uploaded_file:
     image = np.array(Image.open(uploaded_file).convert("RGB"))
     st.image(image, caption='Imagem Carregada', use_column_width=True)
     
+    shape_option = st.selectbox("Escolha o formato da imagem", ["Retangular (2400x1600)", "Quadrado (1500x1500)", "Proporção Original"])
+    resized_image = resize_image(image, shape_option)
+    
     nb_color = st.slider('Número de Cores (Camadas)', 1, 100, 5)  # Controle de 1 a 100 camadas
-    color_layers, color_centers = segment_image_into_layers(image, nb_color)
+    color_layers, color_centers = segment_image_into_layers(resized_image, nb_color)
     
     # Exibe as camadas processadas para MDF
     st.subheader("Camadas Segmentadas para Corte")
