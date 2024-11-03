@@ -16,10 +16,14 @@ def resize_image(image, shape_option):
         width = height = 1000
     else:  # Proporção Original
         aspect_ratio = original_w / original_h
-        height = int(np.sqrt(scaling_factor / aspect_ratio))
-        width = int(height * aspect_ratio)
+        height = max(1, int(np.sqrt(scaling_factor / aspect_ratio)))
+        width = max(1, int(height * aspect_ratio))
     
-    resized_image = cv2.resize(image, (width, height), interpolation=cv2.INTER_LINEAR)
+    if width > 0 and height > 0:
+        resized_image = cv2.resize(image, (width, height), interpolation=cv2.INTER_LINEAR)
+    else:
+        st.error("Erro ao redimensionar a imagem: dimensões inválidas.")
+        return None
     return resized_image
 
 # Função para segmentar imagem em camadas de cor com amostragem por blocos
@@ -80,27 +84,28 @@ if uploaded_file:
     shape_option = st.selectbox("Escolha o formato da imagem", ["Retangular (1200x800)", "Quadrado (1000x1000)", "Proporção Original"])
     resized_image = resize_image(image, shape_option)
     
-    nb_color = st.slider('Número de Cores (Camadas)', 1, 50, 5)  # Controle de 1 a 50 camadas
-    sample_fraction = st.slider('Fração de amostra para processamento', 0.05, 0.5, 0.1)  # Reduz o tamanho da amostra
-    color_layers, color_centers = segment_image_into_layers(resized_image, nb_color, sample_fraction)
-    
-    # Exibe as camadas processadas para MDF
-    st.subheader("Camadas Segmentadas para Corte")
-    mdf_layers = prepare_layers_for_mdf(color_layers, color_centers)
-    
-    for idx, layer in enumerate(mdf_layers):
-        # Ajusta o valor da camada para ficar entre 0 e 255 antes de exibir
-        layer_display = (layer * 255).astype(np.uint8)
-        st.image(layer_display, caption=f"Camada {idx + 1}", use_column_width=True)
-    
-    # Inicializa a imagem empilhada com zeros e converte cada camada para uint8
-    stacked_image = np.zeros_like(mdf_layers[0], dtype=np.uint8)
-    for idx, layer in enumerate(mdf_layers):
-        stacked_image = cv2.add(stacked_image, (layer * 255).astype(np.uint8))
+    if resized_image is not None:
+        nb_color = st.slider('Número de Cores (Camadas)', 1, 50, 5)  # Controle de 1 a 50 camadas
+        sample_fraction = st.slider('Fração de amostra para processamento', 0.05, 0.5, 0.1)  # Reduz o tamanho da amostra
+        color_layers, color_centers = segment_image_into_layers(resized_image, nb_color, sample_fraction)
         
-    st.subheader("Mapa Topográfico Empilhado (Visualização)")
-    st.image(stacked_image, caption="Mapa Topográfico em Camadas", use_column_width=True)
+        # Exibe as camadas processadas para MDF
+        st.subheader("Camadas Segmentadas para Corte")
+        mdf_layers = prepare_layers_for_mdf(color_layers, color_centers)
+        
+        for idx, layer in enumerate(mdf_layers):
+            # Ajusta o valor da camada para ficar entre 0 e 255 antes de exibir
+            layer_display = (layer * 255).astype(np.uint8)
+            st.image(layer_display, caption=f"Camada {idx + 1}", use_column_width=True)
+        
+        # Inicializa a imagem empilhada com zeros e converte cada camada para uint8
+        stacked_image = np.zeros_like(mdf_layers[0], dtype=np.uint8)
+        for idx, layer in enumerate(mdf_layers):
+            stacked_image = cv2.add(stacked_image, (layer * 255).astype(np.uint8))
+            
+        st.subheader("Mapa Topográfico Empilhado (Visualização)")
+        st.image(stacked_image, caption="Mapa Topográfico em Camadas", use_column_width=True)
 
-    # Salva a imagem empilhada
-    result_bytes = cv2.imencode('.png', stacked_image)[1].tobytes()
-    st.download_button("Baixar Mapa Topográfico Empilhado", data=result_bytes, file_name='mapa_topografico.png', mime='image/png')
+        # Salva a imagem empilhada
+        result_bytes = cv2.imencode('.png', stacked_image)[1].tobytes()
+        st.download_button("Baixar Mapa Topográfico Empilhado", data=result_bytes, file_name='mapa_topografico.png', mime='image/png')
