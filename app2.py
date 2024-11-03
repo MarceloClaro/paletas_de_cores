@@ -96,14 +96,16 @@ if uploaded_file is not None:
 
         # Exibir cada camada individual colorida e permitir download
         st.subheader("Camadas Individuais de Cor (Mapa Topográfico Colorido)")
+        
+        # Criar uma imagem de sobreposição com todas as camadas
+        overlay_image = np.zeros_like(image)  # Iniciar a imagem de sobreposição com preto
         for i, layer in enumerate(individual_layers):
-            st.image(layer, caption=f'Camada {i + 1}', use_column_width=True)
+            overlay_image = cv2.addWeighted(overlay_image, 1, layer, 1, 0)  # Sobrepor cada camada colorida
+            st.image(layer, caption=f'Camada {i + 1}', use_column_width=True)  # Exibir a camada individualmente
             layer_bytes = cv2.imencode('.jpg', layer)[1].tobytes()
             st.download_button(f"Baixar Camada {i + 1}", data=layer_bytes, file_name=f'layer_{i + 1}.jpg', mime='image/jpeg')
 
-        # Download da imagem segmentada e da imagem resultante
-        result_bytes = cv2.imencode('.jpg', result)[1].tobytes()
-        st.download_button("Baixar imagem resultante", data=result_bytes, file_name='result.jpg', mime='image/jpeg')
-        
-        segmented_image_bytes = cv2.imencode('.jpg', segmented_image)[1].tobytes()
-        st.download_button("Baixar imagem segmentada", data=segmented_image_bytes, file_name='segmented.jpg', mime='image/jpeg')
+        # Exibir e permitir o download da imagem final sobreposta
+        st.image(overlay_image, caption="Imagem Final Sobreposta", use_column_width=True)
+        overlay_bytes = cv2.imencode('.jpg', overlay_image)[1].tobytes()
+        st.download_button("Baixar Imagem Final Sobreposta", data=overlay_bytes, file_name="overlay_image.jpg", mime="image/jpeg")
