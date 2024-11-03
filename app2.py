@@ -20,27 +20,26 @@ class Canvas():
         quantified_image, colors, color_percentages = self.quantification(clean_img)
         self.color_percentages = color_percentages
         canvas = np.ones(quantified_image.shape[:2], dtype="uint8") * 255
-        individual_layers = []  # Lista para armazenar imagens das camadas individuais
+        individual_layers = []  # Lista para armazenar imagens das camadas coloridas
 
         for ind, color in enumerate(colors):
-            color_rgb = [int(c * 255) for c in color]
-            self.colormap.append(color_rgb)
+            self.colormap.append([int(c * 255) for c in color])
             mask = cv2.inRange(quantified_image, color, color)
             cnts = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
             cnts = cnts[0] if len(cnts) == 2 else cnts[1]
 
-            # Cria uma camada individual colorida com a cor dominante
-            layer = np.zeros((quantified_image.shape[0], quantified_image.shape[1], 3), dtype="uint8")
-            layer[:] = color_rgb  # Preenche a camada com a cor dominante
+            # Cria uma camada individual colorida com a cor dominante para a sobreposição
+            layer_colored = np.zeros(quantified_image.shape, dtype="uint8")
+            color_bgr = tuple(int(c * 255) for c in color[::-1])  # Convertendo para BGR
             for contour in cnts:
                 _, _, width_ctr, height_ctr = cv2.boundingRect(contour)
                 if width_ctr > 10 and height_ctr > 10 and cv2.contourArea(contour, True) < -100:
                     cv2.drawContours(canvas, [contour], -1, (0, 0, 0), 1)
-                    cv2.drawContours(layer, [contour], -1, color_rgb, -1)  # Preenche o contorno com a cor
+                    cv2.drawContours(layer_colored, [contour], -1, color_bgr, -1)  # Preenche a camada com a cor dominante
                     txt_x, txt_y = contour[0][0]
                     cv2.putText(canvas, '{:d}'.format(ind + 1), (txt_x, txt_y + 15),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1)
-            individual_layers.append(layer)  # Armazena a camada colorida
+            individual_layers.append(layer_colored)  # Armazena a camada colorida
 
         return canvas, colors, quantified_image, individual_layers
 
@@ -95,8 +94,8 @@ if uploaded_file is not None:
         st.image(result, caption='Imagem Resultante', use_column_width=True)
         st.image(segmented_image, caption='Imagem Segmentada', use_column_width=True)
 
-        # Exibir cada camada individual colorida com a cor dominante e permitir download
-        st.subheader("Camadas Individuais de Cor (Mapa Topográfico)")
+        # Exibir cada camada individual colorida e permitir download
+        st.subheader("Camadas Individuais de Cor (Mapa Topográfico Colorido)")
         for i, layer in enumerate(individual_layers):
             st.image(layer, caption=f'Camada {i + 1}', use_column_width=True)
             layer_bytes = cv2.imencode('.jpg', layer)[1].tobytes()
