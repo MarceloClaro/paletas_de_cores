@@ -34,12 +34,12 @@ def segment_image_into_layers(image, nb_color=5, sample_fraction=0.1):
     # Amostragem por blocos
     sampled_data = data.reshape((-1, 3))
     sample_size = max(1, int(sampled_data.shape[0] * sample_fraction))
-    sampled_data = sampled_data[np.random.choice(sampled_data.shape[0], size=sample_size, replace=False)]
-    
-    if len(sampled_data) < nb_color:
+    if sample_size < nb_color:
         st.error("A fração de amostra é muito pequena para o número de camadas solicitado. Aumente a fração de amostra.")
         return None, None
-
+    
+    sampled_data = sampled_data[np.random.choice(sampled_data.shape[0], size=sample_size, replace=False)]
+    
     kmeans = MiniBatchKMeans(n_clusters=nb_color, random_state=42).fit(sampled_data)
     labels = kmeans.predict(data.reshape((-1, 3))).reshape(h, w)
     
