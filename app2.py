@@ -3,17 +3,16 @@ import cv2
 import streamlit as st
 from PIL import Image
 from sklearn.cluster import KMeans
-from sklearn.utils import shuffle
 
 # Função para segmentar imagem em camadas de cor
 def segment_image_into_layers(image, nb_color=5):
-    # Redimensiona a imagem para análise mais precisa
-    large_image = cv2.resize(image, (300, 300), interpolation=cv2.INTER_LINEAR)
-    large_image = np.float32(large_image) / 255.0  # Normaliza os valores entre 0 e 1
+    # Redimensiona a imagem para 2400 x 1600 pixels para simular 2,4 m x 1,6 m
+    resized_image = cv2.resize(image, (2400, 1600), interpolation=cv2.INTER_LINEAR)
+    resized_image = np.float32(resized_image) / 255.0  # Normaliza os valores entre 0 e 1
     
     # Clusterização das cores
-    h, w, ch = large_image.shape
-    data = large_image.reshape((-1, 3))
+    h, w, ch = resized_image.shape
+    data = resized_image.reshape((-1, 3))
     kmeans = KMeans(n_clusters=nb_color, random_state=42).fit(data)
     labels = kmeans.predict(data)
     
@@ -21,11 +20,8 @@ def segment_image_into_layers(image, nb_color=5):
     color_layers = []
     for i in range(nb_color):
         mask = (labels.reshape(h, w) == i).astype(np.uint8) * 255
-        color_layer = np.zeros_like(large_image)
+        color_layer = np.zeros_like(resized_image)
         color_layer[labels.reshape(h, w) == i] = kmeans.cluster_centers_[i]
-        
-        # Redimensiona com interpolação suave para a imagem original
-        color_layer = cv2.resize(color_layer, (image.shape[1], image.shape[0]), interpolation=cv2.INTER_LINEAR)
         color_layers.append(color_layer)
     
     return color_layers, kmeans.cluster_centers_
@@ -62,7 +58,7 @@ if uploaded_file:
     image = np.array(Image.open(uploaded_file).convert("RGB"))
     st.image(image, caption='Imagem Carregada', use_column_width=True)
     
-    nb_color = st.slider('Número de Cores (Camadas)', 1, 10, 5)
+    nb_color = st.slider('Número de Cores (Camadas)', 1, 100, 5)  # Controle de 1 a 100 camadas
     color_layers, color_centers = segment_image_into_layers(image, nb_color)
     
     # Exibe as camadas processadas para MDF
