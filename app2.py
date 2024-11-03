@@ -7,14 +7,14 @@ from sklearn.cluster import MiniBatchKMeans
 # Função para redimensionar imagem conforme escolha do usuário
 def resize_image(image, shape_option):
     original_h, original_w = image.shape[:2]
-    target_area = 1.2  # Área em metros quadrados, reduzida para melhorar performance
-    scaling_factor = (target_area * 1e6) / (original_h * original_w)  # Fator de escala para garantir 1,2 m²
+    target_area = 1.2  # Área em metros quadrados
+    scaling_factor = (target_area * 1e6) / (original_h * original_w)
 
     if shape_option == "Retangular (1200x800)":
         width, height = 1200, 800
     elif shape_option == "Quadrado (1000x1000)":
         width = height = 1000
-    else:  # Proporção Original
+    else:
         aspect_ratio = original_w / original_h
         height = max(1, int(np.sqrt(scaling_factor / aspect_ratio)))
         width = max(1, int(height * aspect_ratio))
@@ -26,26 +26,23 @@ def resize_image(image, shape_option):
         return None
     return resized_image
 
-# Função para segmentar imagem em camadas de cor com amostragem por blocos
+# Função para segmentar imagem em camadas de cor com amostragem
 def segment_image_into_layers(image, nb_color=5, sample_fraction=0.1):
-    data = np.float32(image) / 255.0  # Normaliza os valores entre 0 e 1
+    data = np.float32(image) / 255.0
     h, w, ch = data.shape
     
-    # Reduz a quantidade de dados com uma amostragem por blocos
+    # Amostragem por blocos
     sampled_data = data.reshape((-1, 3))
-    sample_size = max(1, int(sampled_data.shape[0] * sample_fraction))  # Garante ao menos uma amostra
+    sample_size = max(1, int(sampled_data.shape[0] * sample_fraction))
     sampled_data = sampled_data[np.random.choice(sampled_data.shape[0], size=sample_size, replace=False)]
     
-    # Verificação para garantir que haja amostras suficientes
     if len(sampled_data) < nb_color:
         st.error("A fração de amostra é muito pequena para o número de camadas solicitado. Aumente a fração de amostra.")
         return None, None
 
-    # Clusterização das cores usando MiniBatchKMeans para maior eficiência
     kmeans = MiniBatchKMeans(n_clusters=nb_color, random_state=42).fit(sampled_data)
     labels = kmeans.predict(data.reshape((-1, 3))).reshape(h, w)
     
-    # Processa cada camada de cor com a cor dominante preservada
     color_layers = []
     for i in range(nb_color):
         mask = (labels == i).astype(np.uint8) * 255
@@ -55,13 +52,13 @@ def segment_image_into_layers(image, nb_color=5, sample_fraction=0.1):
     
     return color_layers, kmeans.cluster_centers_
 
-# Função para preparar cada camada para o corte em MDF (camadas sólidas e suavizadas)
+# Função para preparar camadas para corte em MDF com cores dominantes preservadas
 def prepare_layers_for_mdf(color_layers, color_centers):
     mdf_layers = []
     for idx, layer in enumerate(color_layers):
         gray = cv2.cvtColor((layer * 255).astype(np.uint8), cv2.COLOR_BGR2GRAY)
         
-        # Suaviza as bordas dos contornos
+        # Suaviza bordas dos contornos
         blurred = cv2.GaussianBlur(gray, (5, 5), 0)
         _, thresholded = cv2.threshold(blurred, 1, 255, cv2.THRESH_BINARY)
         
@@ -79,7 +76,7 @@ def prepare_layers_for_mdf(color_layers, color_centers):
         mdf_layers.append(solid_layer)
     return mdf_layers
 
-# Interface no Streamlit para exibir camadas e o resultado final
+# Interface no Streamlit
 st.title('Mapa Topográfico em Camadas')
 uploaded_file = st.file_uploader("Carregue uma imagem", type=["jpg", "png"])
 
@@ -91,21 +88,18 @@ if uploaded_file:
     resized_image = resize_image(image, shape_option)
     
     if resized_image is not None:
-        nb_color = st.slider('Número de Cores (Camadas)', 1, 50, 5)  # Controle de 1 a 50 camadas
-        sample_fraction = st.slider('Fração de amostra para processamento', 0.05, 0.5, 0.1)  # Reduz o tamanho da amostra
+        nb_color = st.slider('Número de Cores (Camadas)', 1, 50, 5)
+        sample_fraction = st.slider('Fração de amostra para processamento', 0.05, 0.5, 0.1)
         color_layers, color_centers = segment_image_into_layers(resized_image, nb_color, sample_fraction)
         
         if color_layers is not None:
-            # Exibe as camadas processadas para MDF
             st.subheader("Camadas Segmentadas para Corte")
             mdf_layers = prepare_layers_for_mdf(color_layers, color_centers)
             
             for idx, layer in enumerate(mdf_layers):
-                # Ajusta o valor da camada para ficar entre 0 e 255 antes de exibir
                 layer_display = (layer * 255).astype(np.uint8)
                 st.image(layer_display, caption=f"Camada {idx + 1}", use_column_width=True)
             
-            # Inicializa a imagem empilhada com zeros e converte cada camada para uint8
             stacked_image = np.zeros_like(mdf_layers[0], dtype=np.uint8)
             for idx, layer in enumerate(mdf_layers):
                 stacked_image = cv2.add(stacked_image, (layer * 255).astype(np.uint8))
@@ -113,6 +107,5 @@ if uploaded_file:
             st.subheader("Mapa Topográfico Empilhado (Visualização)")
             st.image(stacked_image, caption="Mapa Topográfico em Camadas", use_column_width=True)
 
-            # Salva a imagem empilhada
             result_bytes = cv2.imencode('.png', stacked_image)[1].tobytes()
             st.download_button("Baixar Mapa Topográfico Empilhado", data=result_bytes, file_name='mapa_topografico.png', mime='image/png')
