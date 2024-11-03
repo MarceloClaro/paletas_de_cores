@@ -7,13 +7,13 @@ from sklearn.cluster import MiniBatchKMeans
 # Função para redimensionar imagem conforme escolha do usuário
 def resize_image(image, shape_option):
     original_h, original_w = image.shape[:2]
-    target_area = 2.4  # Área em metros quadrados
-    scaling_factor = (target_area * 1e6) / (original_h * original_w)  # Fator de escala para garantir 2,40 m²
+    target_area = 1.2  # Área em metros quadrados, reduzida para melhorar performance
+    scaling_factor = (target_area * 1e6) / (original_h * original_w)  # Fator de escala para garantir 1,2 m²
 
-    if shape_option == "Retangular (2400x1600)":
-        width, height = 2400, 1600
-    elif shape_option == "Quadrado (1500x1500)":
-        width = height = 1500
+    if shape_option == "Retangular (1200x800)":
+        width, height = 1200, 800
+    elif shape_option == "Quadrado (1000x1000)":
+        width = height = 1000
     else:  # Proporção Original
         aspect_ratio = original_w / original_h
         height = int(np.sqrt(scaling_factor / aspect_ratio))
@@ -22,25 +22,25 @@ def resize_image(image, shape_option):
     resized_image = cv2.resize(image, (width, height), interpolation=cv2.INTER_LINEAR)
     return resized_image
 
-# Função para segmentar imagem em camadas de cor com amostragem de dados
-def segment_image_into_layers(image, nb_color=5):
+# Função para segmentar imagem em camadas de cor com amostragem por blocos
+def segment_image_into_layers(image, nb_color=5, sample_fraction=0.1):
     data = np.float32(image) / 255.0  # Normaliza os valores entre 0 e 1
     h, w, ch = data.shape
-    data = data.reshape((-1, 3))
     
-    # Reduz a quantidade de dados com uma amostragem de 20%
-    sample_data = data[np.random.choice(data.shape[0], size=int(data.shape[0] * 0.2), replace=False)]
+    # Reduz a quantidade de dados com uma amostragem por blocos
+    sampled_data = data.reshape((-1, 3))
+    sampled_data = sampled_data[np.random.choice(sampled_data.shape[0], size=int(sampled_data.shape[0] * sample_fraction), replace=False)]
     
     # Clusterização das cores usando MiniBatchKMeans para maior eficiência
-    kmeans = MiniBatchKMeans(n_clusters=nb_color, random_state=42).fit(sample_data)
-    labels = kmeans.predict(data)
+    kmeans = MiniBatchKMeans(n_clusters=nb_color, random_state=42).fit(sampled_data)
+    labels = kmeans.predict(data.reshape((-1, 3))).reshape(h, w)
     
     # Processa cada camada de cor com a cor dominante preservada
     color_layers = []
     for i in range(nb_color):
-        mask = (labels.reshape(h, w) == i).astype(np.uint8) * 255
+        mask = (labels == i).astype(np.uint8) * 255
         color_layer = np.zeros_like(image, dtype=np.float32)
-        color_layer[labels.reshape(h, w) == i] = kmeans.cluster_centers_[i]
+        color_layer[labels == i] = kmeans.cluster_centers_[i]
         color_layers.append(color_layer)
     
     return color_layers, kmeans.cluster_centers_
@@ -77,11 +77,12 @@ if uploaded_file:
     image = np.array(Image.open(uploaded_file).convert("RGB"))
     st.image(image, caption='Imagem Carregada', use_column_width=True)
     
-    shape_option = st.selectbox("Escolha o formato da imagem", ["Retangular (2400x1600)", "Quadrado (1500x1500)", "Proporção Original"])
+    shape_option = st.selectbox("Escolha o formato da imagem", ["Retangular (1200x800)", "Quadrado (1000x1000)", "Proporção Original"])
     resized_image = resize_image(image, shape_option)
     
-    nb_color = st.slider('Número de Cores (Camadas)', 1, 100, 5)  # Controle de 1 a 100 camadas
-    color_layers, color_centers = segment_image_into_layers(resized_image, nb_color)
+    nb_color = st.slider('Número de Cores (Camadas)', 1, 50, 5)  # Controle de 1 a 50 camadas
+    sample_fraction = st.slider('Fração de amostra para processamento', 0.05, 0.5, 0.1)  # Reduz o tamanho da amostra
+    color_layers, color_centers = segment_image_into_layers(resized_image, nb_color, sample_fraction)
     
     # Exibe as camadas processadas para MDF
     st.subheader("Camadas Segmentadas para Corte")
