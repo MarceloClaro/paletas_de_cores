@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 import streamlit as st
 from PIL import Image
-from sklearn.cluster import KMeans
+from sklearn.cluster import MiniBatchKMeans
 
 # Função para redimensionar imagem conforme escolha do usuário
 def resize_image(image, shape_option):
@@ -22,14 +22,17 @@ def resize_image(image, shape_option):
     resized_image = cv2.resize(image, (width, height), interpolation=cv2.INTER_LINEAR)
     return resized_image
 
-# Função para segmentar imagem em camadas de cor
+# Função para segmentar imagem em camadas de cor com amostragem de dados
 def segment_image_into_layers(image, nb_color=5):
     data = np.float32(image) / 255.0  # Normaliza os valores entre 0 e 1
     h, w, ch = data.shape
     data = data.reshape((-1, 3))
     
-    # Clusterização das cores
-    kmeans = KMeans(n_clusters=nb_color, random_state=42).fit(data)
+    # Reduz a quantidade de dados com uma amostragem de 20%
+    sample_data = data[np.random.choice(data.shape[0], size=int(data.shape[0] * 0.2), replace=False)]
+    
+    # Clusterização das cores usando MiniBatchKMeans para maior eficiência
+    kmeans = MiniBatchKMeans(n_clusters=nb_color, random_state=42).fit(sample_data)
     labels = kmeans.predict(data)
     
     # Processa cada camada de cor com a cor dominante preservada
