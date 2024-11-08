@@ -6,4 +6,6 @@ seaborn
 setuptools==65.5.0
 opencv-python-headless
 numpy>=1.22.0
+pandas 
+gTTS
 
