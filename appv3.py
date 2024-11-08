@@ -13,8 +13,18 @@ from scipy.spatial import distance
 from gtts import gTTS
 import tempfile
 
-# Importação da biblioteca groq
-from groq import Groq
+# Verificação da versão do Python para importação correta
+import sys
+if sys.version_info >= (3, 9):
+    from collections.abc import Callable
+else:
+    from typing import Callable
+
+# Importação do Tuple para anotações de tipo
+try:
+    from typing import Tuple
+except ImportError:
+    Tuple = tuple
 
 # Configurações da página do Streamlit
 st.set_page_config(
@@ -35,11 +45,11 @@ MODEL_MAX_TOKENS = {
     'gemma-7b-it': 8192,
 }
 
-# Definição das chaves de API
+# Definição das chaves de API (substitua pelas suas chaves reais)
 API_KEYS = {
-    "fetch": ["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"],
-    "refine": ["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"],
-    "evaluate": ["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"]
+    "fetch": ["SUA_API_KEY_FETCH_1", "SUA_API_KEY_FETCH_2"],
+    "refine": ["SUA_API_KEY_REFINE_1", "SUA_API_KEY_REFINE_2"],
+    "evaluate": ["SUA_API_KEY_EVALUATE_1", "SUA_API_KEY_EVALUATE_2"]
 }
 
 # Variáveis para manter o estado das chaves de API
@@ -51,7 +61,6 @@ CURRENT_API_KEY_INDEX = {
 
 # Função para obter a próxima chave de API disponível
 def get_next_api_key(action: str) -> str:
-    global CURRENT_API_KEY_INDEX
     keys = API_KEYS.get(action, [])
     if keys:
         key_index = CURRENT_API_KEY_INDEX[action]
@@ -59,12 +68,12 @@ def get_next_api_key(action: str) -> str:
         CURRENT_API_KEY_INDEX[action] = (key_index + 1) % len(keys)
         return api_key
     else:
-        raise ValueError(f"No API keys available for action: {action}")
+        raise ValueError(f"Nenhuma chave de API disponível para a ação: {action}")
 
 # Funções para carregar as opções de agentes
 def load_agent_options():
     if os.path.exists(FILEPATH):
-        with open(FILEPATH, 'r') as file:
+        with open(FILEPATH, 'r', encoding='utf-8') as file:
             try:
                 agents = json.load(file)
                 return [agent["agente"] for agent in agents]
@@ -75,6 +84,7 @@ def load_agent_options():
 
 # Função para extrair texto de um PDF
 def extrair_texto_pdf(file):
+    import pdfplumber
     with pdfplumber.open(file) as pdf:
         texto_paginas = [pagina.extract_text() for pagina in pdf.pages]
     return texto_paginas
@@ -122,17 +132,17 @@ def log_api_usage(action, interaction_number, tokens_used, time_taken, user_inpu
         "timestamp": time.time()
     }
     if os.path.exists(API_USAGE_FILE):
-        with open(API_USAGE_FILE, 'r+') as file:
+        with open(API_USAGE_FILE, 'r+', encoding='utf-8') as file:
             try:
                 usage_data = json.load(file)
             except json.JSONDecodeError:
                 usage_data = []
             usage_data.append(log_entry)
             file.seek(0)
-            json.dump(usage_data, file, indent=4)
+            json.dump(usage_data, file, indent=4, ensure_ascii=False)
     else:
-        with open(API_USAGE_FILE, 'w') as file:
-            json.dump([log_entry], file, indent=4)
+        with open(API_USAGE_FILE, 'w', encoding='utf-8') as file:
+            json.dump([log_entry], file, indent=4, ensure_ascii=False)
 
 # Funções para manipular o histórico de chat
 def save_chat_history(user_input, user_prompt, expert_response):
@@ -142,21 +152,21 @@ def save_chat_history(user_input, user_prompt, expert_response):
         "expert_response": expert_response
     }
     if os.path.exists(CHAT_HISTORY_FILE):
-        with open(CHAT_HISTORY_FILE, 'r+') as file:
+        with open(CHAT_HISTORY_FILE, 'r+', encoding='utf-8') as file:
             try:
                 chat_history = json.load(file)
             except json.JSONDecodeError:
                 chat_history = []
             chat_history.append(chat_entry)
             file.seek(0)
-            json.dump(chat_history, file, indent=4)
+            json.dump(chat_history, file, indent=4, ensure_ascii=False)
     else:
-        with open(CHAT_HISTORY_FILE, 'w') as file:
-            json.dump([chat_entry], file, indent=4)
+        with open(CHAT_HISTORY_FILE, 'w', encoding='utf-8') as file:
+            json.dump([chat_entry], file, indent=4, ensure_ascii=False)
 
 def load_chat_history():
     if os.path.exists(CHAT_HISTORY_FILE):
-        with open(CHAT_HISTORY_FILE, 'r') as file:
+        with open(CHAT_HISTORY_FILE, 'r', encoding='utf-8') as file:
             try:
                 chat_history = json.load(file)
                 return chat_history
@@ -172,7 +182,7 @@ def clear_chat_history():
 # Funções para manipular o uso da API
 def load_api_usage():
     if os.path.exists(API_USAGE_FILE):
-        with open(API_USAGE_FILE, 'r') as file:
+        with open(API_USAGE_FILE, 'r', encoding='utf-8') as file:
             try:
                 usage_data = json.load(file)
                 return usage_data
@@ -188,7 +198,7 @@ def reset_api_usage():
 # Função para buscar a resposta do assistente
 def fetch_assistant_response(user_input: str, user_prompt: str, model_name: str, temperature: float,
                              agent_selection: str, chat_history: list, interaction_number: int,
-                             references_df: pd.DataFrame = None) -> Tuple[str, str]:
+                             references_df: pd.DataFrame = None):
     try:
         # Simulação de chamada à API do modelo
         assistant_response = f"Resposta gerada pelo modelo para a entrada: {user_input}"
@@ -206,7 +216,7 @@ def fetch_assistant_response(user_input: str, user_prompt: str, model_name: str,
 # Função para refinar a resposta
 def refine_response(expert_description: str, assistant_response: str, user_input: str, user_prompt: str,
                     model_name: str, temperature: float, references_context: str, chat_history: list,
-                    interaction_number: int) -> str:
+                    interaction_number: int):
     try:
         # Simulação de refinamento da resposta
         refined_response = f"Resposta refinada: {assistant_response} com base em {references_context}"
@@ -223,7 +233,7 @@ def refine_response(expert_description: str, assistant_response: str, user_input
 # Função para avaliar a resposta com RAG
 def evaluate_response_with_rag(user_input: str, user_prompt: str, expert_title: str, expert_description: str,
                                assistant_response: str, model_name: str, temperature: float, chat_history: list,
-                               interaction_number: int) -> str:
+                               interaction_number: int):
     try:
         # Simulação de avaliação com RAG
         rag_response = f"Avaliação da resposta: {assistant_response}"
@@ -244,17 +254,17 @@ def save_expert(expert_title: str, expert_description: str):
         "descricao": expert_description
     }
     if os.path.exists(FILEPATH):
-        with open(FILEPATH, 'r+') as file:
+        with open(FILEPATH, 'r+', encoding='utf-8') as file:
             try:
                 agents = json.load(file)
             except json.JSONDecodeError:
                 agents = []
             agents.append(new_expert)
             file.seek(0)
-            json.dump(agents, file, indent=4)
+            json.dump(agents, file, indent=4, ensure_ascii=False)
     else:
-        with open(FILEPATH, 'w') as file:
-            json.dump([new_expert], file, indent=4)
+        with open(FILEPATH, 'w', encoding='utf-8') as file:
+            json.dump([new_expert], file, indent=4, ensure_ascii=False)
 
 # Funções adicionais para interpretação de cores
 
@@ -458,10 +468,12 @@ with col2:
                 st.session_state.references_path = "references.csv"
                 st.session_state.references_df = df
 
-        st.session_state.descricao_especialista_ideal, st.session_state.resposta_assistente = fetch_assistant_response(user_input, user_prompt, model_name, temperature, agent_selection, chat_history, interaction_number, st.session_state.get('references_df'))
-        st.session_state.resposta_original = st.session_state.resposta_assistente
+        expert_description, assistant_response = fetch_assistant_response(user_input, user_prompt, model_name, temperature, agent_selection, chat_history, interaction_number, st.session_state.get('references_df'))
+        st.session_state.descricao_especialista_ideal = expert_description
+        st.session_state.resposta_assistente = assistant_response
+        st.session_state.resposta_original = assistant_response
         st.session_state.resposta_refinada = ""
-        save_chat_history(user_input, user_prompt, st.session_state.resposta_assistente)
+        save_chat_history(user_input, user_prompt, assistant_response)
 
     if refine_clicked:
         if st.session_state.resposta_assistente:
