@@ -37,9 +37,9 @@ MODEL_MAX_TOKENS = {
 
 # Definição das chaves de API
 API_KEYS = {
-    "fetch": ["SUA_API_KEY_FETCH_1", "SUA_API_KEY_FETCH_2"],
-    "refine": ["SUA_API_KEY_REFINE_1", "SUA_API_KEY_REFINE_2"],
-    "evaluate": ["SUA_API_KEY_EVALUATE_1", "SUA_API_KEY_EVALUATE_2"]
+    "fetch": ["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"],
+    "refine": ["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"],
+    "evaluate": ["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"]
 }
 
 # Variáveis para manter o estado das chaves de API
